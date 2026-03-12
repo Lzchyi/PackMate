@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user profile information and preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "language": { "type": "string", "enum": ["en-GB", "zh-CN"] },
+        "joinedAt": { "type": "number" }
+      },
+      "required": ["uid", "name", "joinedAt"]
+    },
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "A piece of gear in the user's inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string", "description": "Owner UID" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "isMaster": { "type": "boolean" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "uid", "name", "category"]
+    },
+    "Trip": {
+      "title": "Trip",
+      "description": "A travel trip with a packing list",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string", "description": "Owner UID" },
+        "name": { "type": "string" },
+        "tripType": { "type": "string" },
+        "transportationType": { "type": "string" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "items": { "type": "array" },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "uid", "name", "tripType", "createdAt"]
+    },
+    "CustomList": {
+      "title": "Custom List",
+      "description": "A reusable packing list template",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string", "description": "Owner UID" },
+        "name": { "type": "string" },
+        "items": { "type": "array" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "uid", "name", "items"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User profile documents"
+    },
+    "/inventory/{itemId}": {
+      "schema": "InventoryItem",
+      "description": "User gear inventory"
+    },
+    "/trips/{tripId}": {
+      "schema": "Trip",
+      "description": "User trips and packing lists"
+    },
+    "/customLists/{listId}": {
+      "schema": "CustomList",
+      "description": "User custom list templates"
+    }
+  }
+}

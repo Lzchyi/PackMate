@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'name', 'joinedAt']) &&
+             data.uid is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.joinedAt is number;
+    }
+
+    function isValidInventoryItem(data) {
+      return data.keys().hasAll(['id', 'uid', 'name', 'category']) &&
+             data.id is string &&
+             data.uid is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.category is string;
+    }
+
+    function isValidTrip(data) {
+      return data.keys().hasAll(['id', 'uid', 'name', 'tripType', 'createdAt']) &&
+             data.id is string &&
+             data.uid is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.tripType is string &&
+             data.createdAt is number;
+    }
+
+    function isValidCustomList(data) {
+      return data.keys().hasAll(['id', 'uid', 'name', 'items']) &&
+             data.id is string &&
+             data.uid is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.items is list;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+    }
+
+    // Inventory collection
+    match /inventory/{itemId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidInventoryItem(request.resource.data);
+      allow update: if isDocOwner() && uidNotModified() && isValidInventoryItem(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    // Trips collection
+    match /trips/{tripId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidTrip(request.resource.data);
+      allow update: if isDocOwner() && uidNotModified() && isValidTrip(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    // Custom Lists collection
+    match /customLists/{listId} {
+      allow read: if isDocOwner();
+      allow create: if isAuthenticated() && uidUnchanged() && isValidCustomList(request.resource.data);
+      allow update: if isDocOwner() && uidNotModified() && isValidCustomList(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+  }
+}
