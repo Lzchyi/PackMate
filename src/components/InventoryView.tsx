@@ -31,15 +31,22 @@ export default function InventoryView({
   const [viewingList, setViewingList] = useState<CustomList | null>(null);
   const [allEssentials, setAllEssentials] = useState(SUGGESTED_ITEMS['All'] || []);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [isMustBringModalOpen, setIsMustBringModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   
   const [newItemName, setNewItemName] = useState('');
   const [newItemCategory, setNewItemCategory] = useState<Category>('Essentials');
+  const [newItemQuantity, setNewItemQuantity] = useState<number>(1);
   const [newItemIsMaster, setNewItemIsMaster] = useState(false);
+  const [newListItemName, setNewListItemName] = useState('');
+  const [newListItemCategory, setNewListItemCategory] = useState<Category>('Essentials');
   const [includeEssentialsInPreset, setIncludeEssentialsInPreset] = useState(true);
 
-  const [newListItemName, setNewListItemName] = useState('');
-  const [newListItemCategory, setNewListItemCategory] = useState<Category>('Clothing');
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState<Category>('Essentials');
+  const [editQuantity, setEditQuantity] = useState<number>(1);
+  const [showOtherInput, setShowOtherInput] = useState<string | null>(null);
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,21 +57,13 @@ export default function InventoryView({
       name: newItemName.trim(),
       category: newItemCategory,
       isMaster: newItemIsMaster,
+      quantity: newItemQuantity,
     };
 
     onAddItem(newItem);
     setNewItemName('');
     setNewItemIsMaster(false);
-  };
-
-  const handleAddSuggestedItem = (name: string, category: Category) => {
-    const newItem: InventoryItem = {
-      id: Math.random().toString(36).substring(2, 9),
-      name,
-      category,
-      isMaster: false,
-    };
-    onAddItem(newItem);
+    setNewItemQuantity(1);
   };
 
   const handleDeleteItem = (id: string) => {
@@ -76,6 +75,29 @@ export default function InventoryView({
     if (item) {
       onUpdateItem({ ...item, isMaster: !item.isMaster });
     }
+  };
+
+  const updateQuantity = (id: string, qty: number) => {
+    const item = inventory.find(i => i.id === id);
+    if (item) {
+      onUpdateItem({ ...item, quantity: qty });
+    }
+  };
+
+  const startEditing = (item: InventoryItem) => {
+    setEditingItemId(item.id);
+    setEditName(item.name);
+    setEditCategory(item.category);
+    setEditQuantity(item.quantity || 1);
+  };
+
+  const handleUpdateItem = () => {
+    if (!editingItemId || !editName.trim()) return;
+    const item = inventory.find(i => i.id === editingItemId);
+    if (item) {
+      onUpdateItem({ ...item, name: editName.trim(), category: editCategory, quantity: editQuantity });
+    }
+    setEditingItemId(null);
   };
 
   const handleSaveList = () => {
@@ -164,19 +186,6 @@ export default function InventoryView({
     return acc;
   }, {} as Record<Category, InventoryItem[]>);
 
-  // Get unique suggested items that are not in inventory
-  const allSuggestedItems = Array.from(
-    new Map(
-      Object.values(SUGGESTED_ITEMS)
-        .flat()
-        .map(item => [item.name.toLowerCase(), item])
-    ).values()
-  );
-  
-  const availableSuggestions = allSuggestedItems.filter(
-    suggested => !inventory.some(item => item.name.toLowerCase() === suggested.name.toLowerCase())
-  );
-
   const presetLists = Object.entries(SUGGESTED_ITEMS).filter(([key]) => key !== 'All');
 
   return (
@@ -203,82 +212,96 @@ export default function InventoryView({
 
       {activeTab === 'gear' && (
         <>
-          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
-            <h3 className="text-lg font-medium mb-4">{t('inventory.addItem')}</h3>
-            <form onSubmit={handleAddItem} className="flex flex-col sm:flex-row gap-4 items-end">
-              <div className="flex-1 w-full space-y-2">
-                <label className="text-sm font-medium text-stone-700">{t('inventory.itemName')}</label>
-                <input
-                  type="text"
-                  value={newItemName}
-                  onChange={(e) => setNewItemName(e.target.value)}
-                  placeholder="e.g., Favorite Jacket"
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                  required
-                />
-              </div>
-              <div className="w-full sm:w-48 space-y-2">
-                <label className="text-sm font-medium text-stone-700">{t('inventory.category')}</label>
-                <select
-                  value={newItemCategory}
-                  onChange={(e) => setNewItemCategory(e.target.value as Category)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                >
-                  {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c}`)}</option>)}
-                </select>
-              </div>
-              <div className="flex items-center gap-2 h-11 px-2">
-                <input
-                  type="checkbox"
-                  id="isMaster"
-                  checked={newItemIsMaster}
-                  onChange={(e) => setNewItemIsMaster(e.target.checked)}
-                  className="w-5 h-5 rounded border-stone-300 text-emerald-500 focus:ring-emerald-500"
-                />
-                <label htmlFor="isMaster" className="text-sm font-medium text-stone-700 cursor-pointer">
-                  {t('inventory.mustBring')}
-                </label>
-              </div>
-              <button
-                type="submit"
-                className="w-full sm:w-auto bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl px-6 py-2.5 flex items-center justify-center gap-2 transition-colors h-11"
-              >
-                <Plus className="w-4 h-4" />
-                {t('inventory.add')}
-              </button>
-            </form>
-
-            {availableSuggestions.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-stone-100">
-                <h4 className="text-sm font-medium text-stone-700 mb-4 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-emerald-500" />
-                  {t('inventory.suggestions')}
-                </h4>
-                <div className="max-h-[280px] overflow-y-auto pr-2 space-y-4">
-                  {CATEGORIES.map(category => {
-                    const categorySuggestions = availableSuggestions.filter(item => item.category === category);
-                    if (categorySuggestions.length === 0) return null;
-                    return (
-                      <div key={category}>
-                        <h5 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">{t(`category.${category}`)}</h5>
-                        <div className="flex flex-wrap gap-2">
-                          {categorySuggestions.map((item, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => handleAddSuggestedItem(item.name, item.category)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-medium transition-colors border border-emerald-200/50"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                              {t(`item.${item.name}`, item.name)}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
+            <h3 className="text-lg font-semibold mb-6">{t('inventory.addItem')}</h3>
+            <form onSubmit={handleAddItem} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-tight ml-1">{t('inventory.itemName')}</label>
+                  <input
+                    type="text"
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                    placeholder="e.g., Favorite Jacket"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 h-[45px] text-sm"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-tight ml-1">{t('inventory.category')}</label>
+                  <select
+                    value={newItemCategory}
+                    onChange={(e) => setNewItemCategory(e.target.value as Category)}
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 h-[45px] appearance-none text-sm"
+                  >
+                    {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c}`)}</option>)}
+                  </select>
                 </div>
               </div>
-            )}
+              
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pt-4 border-t border-stone-100">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-tight ml-1">{t('inventory.quantity')}</label>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map(qty => (
+                      <button
+                        key={qty}
+                        type="button"
+                        onClick={() => setNewItemQuantity(qty)}
+                        className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
+                          newItemQuantity === qty 
+                            ? 'bg-emerald-500 text-white shadow-sm' 
+                            : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                        }`}
+                      >
+                        {qty}
+                      </button>
+                    ))}
+                    <input
+                      type="number"
+                      min="1"
+                      value={newItemQuantity > 5 ? newItemQuantity : ''}
+                      onChange={(e) => setNewItemQuantity(parseInt(e.target.value) || 1)}
+                      placeholder={t('inventory.other')}
+                      className={`w-20 h-9 rounded-lg text-xs font-bold px-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${
+                        newItemQuantity > 5 
+                          ? 'bg-emerald-500 text-white placeholder-white/70' 
+                          : 'bg-stone-100 text-stone-500 placeholder-stone-400'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="isMaster"
+                      checked={newItemIsMaster}
+                      onChange={(e) => setNewItemIsMaster(e.target.checked)}
+                      className="w-5 h-5 rounded border-stone-300 text-emerald-500 focus:ring-emerald-500"
+                    />
+                    <label htmlFor="isMaster" className="text-sm font-medium text-stone-700 cursor-pointer select-none whitespace-nowrap flex items-center gap-1.5">
+                      {t('inventory.mustBring')}
+                      <button 
+                        type="button"
+                        onClick={() => setIsMustBringModalOpen(true)} 
+                        className="p-1 hover:bg-stone-100 rounded-full transition-colors"
+                      >
+                        <Info className="w-3.5 h-3.5 text-stone-400" />
+                      </button>
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-6 py-2 flex items-center justify-center gap-2 transition-all shadow-sm shadow-emerald-200 active:scale-[0.98] h-[40px] text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('inventory.add')}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
 
           <div className="space-y-6">
@@ -296,28 +319,110 @@ export default function InventoryView({
                     </span>
                   </div>
                   <div className="divide-y divide-stone-100">
+                    <div className="px-6 py-2 bg-stone-50/50 flex items-center text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                      <div className="flex-1">{t('inventory.itemName')}</div>
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="w-12 text-center">{t('inventory.quantity')}</div>
+                        <div className="w-24 text-right"></div>
+                      </div>
+                    </div>
                     {items.map(item => (
-                      <div key={item.id} className="px-6 py-3 flex items-center justify-between hover:bg-stone-50 transition-colors">
-                        <span className="font-medium text-stone-700">{t(`item.${item.name}`, item.name)}</span>
-                        <div className="flex items-center gap-4">
-                          <button
-                            onClick={() => toggleMaster(item.id)}
-                            className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
-                              item.isMaster 
-                                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' 
-                                : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
-                            }`}
-                            title={item.isMaster ? "Remove from Master List" : "Add to Master List"}
-                          >
-                            <Star className={`w-4 h-4 ${item.isMaster ? 'fill-amber-500' : ''}`} />
-                            <span className="hidden sm:inline">{t('inventory.mustBring')}</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteItem(item.id)}
-                            className="text-stone-400 hover:text-red-500 p-2 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                      <div key={item.id} className="px-6 py-4 flex items-center justify-between hover:bg-stone-50 transition-colors gap-4">
+                        <div className="flex-1 min-w-0">
+                          {editingItemId === item.id ? (
+                            <div className="flex flex-col gap-3">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-tight">{t('inventory.itemName')}</label>
+                                <input
+                                  type="text"
+                                  value={editName}
+                                  onChange={(e) => setEditName(e.target.value)}
+                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-tight">{t('inventory.category')}</label>
+                                  <select
+                                    value={editCategory}
+                                    onChange={(e) => setEditCategory(e.target.value as Category)}
+                                    className="w-full bg-white border border-stone-200 rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm appearance-none"
+                                  >
+                                    {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c}`)}</option>)}
+                                  </select>
+                                </div>
+                                <div className="space-y-1">
+                                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-tight">{t('inventory.quantity')}</label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={editQuantity}
+                                    onChange={(e) => setEditQuantity(parseInt(e.target.value) || 1)}
+                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="font-medium text-stone-700 truncate block">{t(`item.${item.name}`, item.name)}</span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-4 shrink-0">
+                          {editingItemId !== item.id && (
+                            <div className="w-12 flex justify-center">
+                              <span className="text-sm font-semibold text-stone-500">{item.quantity || 1}</span>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-end gap-1 w-24">
+                            {editingItemId === item.id ? (
+                              <>
+                                <button
+                                  onClick={handleUpdateItem}
+                                  className="text-emerald-600 hover:text-emerald-700 p-2 transition-colors"
+                                  title={t('common.save')}
+                                >
+                                  <Save className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => setEditingItemId(null)}
+                                  className="text-stone-400 hover:text-stone-600 p-2 transition-colors"
+                                  title={t('common.cancel')}
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => toggleMaster(item.id)}
+                                  className={`p-2 rounded-lg transition-colors ${
+                                    item.isMaster 
+                                      ? 'text-amber-500 bg-amber-50' 
+                                      : 'text-stone-300 hover:text-stone-500'
+                                  }`}
+                                  title={item.isMaster ? "Remove from Must Bring List" : "Add to Must Bring List"}
+                                >
+                                  <Star className={`w-4 h-4 ${item.isMaster ? 'fill-amber-500' : ''}`} />
+                                </button>
+                                <button
+                                  onClick={() => startEditing(item)}
+                                  className="text-stone-400 hover:text-emerald-600 p-2 transition-colors"
+                                  title={t('inventory.editItem')}
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="text-stone-400 hover:text-red-500 p-2 transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -345,7 +450,7 @@ export default function InventoryView({
             </div>
             <button
               onClick={() => setEditingList({ id: Math.random().toString(36).substring(2, 9), name: '', items: [] })}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-6 py-2.5 flex items-center gap-2 transition-colors whitespace-nowrap"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-4 py-2 flex items-center gap-2 transition-colors whitespace-nowrap"
             >
               <Plus className="w-4 h-4" /> {t('inventory.createList')}
             </button>
@@ -660,6 +765,27 @@ export default function InventoryView({
                 <Edit2 className="w-4 h-4" /> {t('inventory.editList')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {isMustBringModalOpen && (
+        <div className="fixed inset-0 bg-stone-900/50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white p-6 rounded-2xl max-w-sm w-full shadow-xl animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-3 mb-4 text-emerald-600">
+              <div className="p-2 bg-emerald-50 rounded-lg">
+                <Star className="w-5 h-5 fill-emerald-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-stone-900">{t('inventory.mustBring')}</h3>
+            </div>
+            <p className="text-stone-600 leading-relaxed text-sm">
+              {t('inventory.mustBringDescription')}
+            </p>
+            <button 
+              onClick={() => setIsMustBringModalOpen(false)} 
+              className="mt-6 w-full py-3 bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl transition-colors active:scale-[0.98]"
+            >
+              {t('common.close')}
+            </button>
           </div>
         </div>
       )}

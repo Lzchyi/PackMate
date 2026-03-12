@@ -2,14 +2,16 @@ import { Category } from '../types';
 
 export const CATEGORIES: Category[] = [
   'Essentials',
-  'Clothing',
+  'General Travel Essentials',
   'Electronics & Gear',
   'Toiletries',
-  'Health & Medicine',
   'Accessories',
+  'Clothing',
+  'Health & Medicine',
   'Skincare',
   'Makeup',
-  'Hair Care'
+  'Hair Care',
+  'Other'
 ];
 
 export const TRIP_TYPES = [
@@ -20,7 +22,8 @@ export const TRIP_TYPES = [
   'Beach',
   'Skiing',
   'Diving',
-  'Camping'
+  'Camping',
+  'Other'
 ];
 
 export const TRANSPORTATION_TYPES = [
@@ -38,14 +41,34 @@ export const SUGGESTED_ITEMS: Record<string, { name: string, category: Category 
     { name: 'Passport / ID', category: 'Essentials' },
     { name: 'Wallet / Cash / Cards', category: 'Essentials' },
     { name: 'Keys', category: 'Essentials' },
+    { name: 'Universal Adapter', category: 'General Travel Essentials' },
+    { name: 'Powerbank', category: 'General Travel Essentials' },
     { name: 'Phone', category: 'Electronics & Gear' },
     { name: 'Phone Charger', category: 'Electronics & Gear' },
     { name: 'Toothbrush', category: 'Toiletries' },
     { name: 'Toothpaste', category: 'Toiletries' },
-    { name: 'Deodorant', category: 'Toiletries' },
+    { name: 'Sunglasses', category: 'Accessories' },
+    { name: 'Clothes', category: 'Clothing' },
+    { name: 'Pants / Shorts / Skirts', category: 'Clothing' },
     { name: 'Underwear', category: 'Clothing' },
     { name: 'Socks', category: 'Clothing' },
-    { name: 'Daily Medications', category: 'Health & Medicine' },
+  ],
+  'General': [
+    { name: 'Umbrella', category: 'General Travel Essentials' },
+    { name: 'Travel Pillow', category: 'General Travel Essentials' },
+    { name: 'Eye Mask', category: 'General Travel Essentials' },
+    { name: 'Earplugs', category: 'General Travel Essentials' },
+    { name: 'Jacket / Coat', category: 'Clothing' },
+    { name: 'Sport Shoes', category: 'Clothing' },
+    { name: 'Slippers', category: 'Clothing' },
+    { name: 'Pajamas', category: 'Clothing' },
+    { name: 'T-shirts', category: 'Clothing' },
+    { name: 'Jeans', category: 'Clothing' },
+    { name: 'Sweater / Cardigan', category: 'Clothing' },
+    { name: 'Razor / Shaving Cream', category: 'Toiletries' },
+    { name: 'Nail Clipper', category: 'Toiletries' },
+    { name: 'Deodorant', category: 'Toiletries' },
+    { name: 'Scarf', category: 'Accessories' },
   ],
   'Hiking': [
     { name: 'Trail Map / Navigation', category: 'Essentials' },
@@ -70,7 +93,12 @@ export const SUGGESTED_ITEMS: Record<string, { name: string, category: Category 
     { name: 'Laptop', category: 'Electronics & Gear' },
     { name: 'Laptop Charger', category: 'Electronics & Gear' },
     { name: 'Business Attire', category: 'Clothing' },
+    { name: 'Dress / Suit', category: 'Clothing' },
+    { name: 'Leather Shoes', category: 'Clothing' },
     { name: 'Dress Shoes', category: 'Clothing' },
+    { name: 'Tie', category: 'Accessories' },
+    { name: 'Bowtie', category: 'Accessories' },
+    { name: 'Belt', category: 'Accessories' },
     { name: 'Notebook & Pen', category: 'Accessories' },
   ],
   'Skiing': [

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { onSnapshot, collection, query, where, doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { onSnapshot, collection, query, where, doc, setDoc, getDoc, deleteDoc, getDocs } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
 import { auth, db, signInWithGoogle } from './firebase';
 import { InventoryItem, Trip, UserProfile, CustomList } from './types';
@@ -60,7 +60,8 @@ export default function App() {
         uid: 'guest',
         name: t('auth.traveler'),
         joinedAt: Date.now(),
-        language: i18n.language as 'en-GB' | 'zh-CN'
+        language: i18n.language as 'en-GB' | 'zh-CN',
+        masterNotificationsEnabled: true
       };
       localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(guestProfile));
       setProfile(guestProfile);
@@ -101,7 +102,8 @@ export default function App() {
             email: firebaseUser.email || '',
             avatarUrl: firebaseUser.photoURL || '',
             joinedAt: Date.now(),
-            language: i18n.language as 'en-GB' | 'zh-CN'
+            language: i18n.language as 'en-GB' | 'zh-CN',
+            masterNotificationsEnabled: true
           };
           await setDoc(userDocRef, newProfile);
           setProfile(newProfile);
@@ -166,26 +168,47 @@ export default function App() {
 
   const activeTrip = activeTripId ? trips.find(t => t.id === activeTripId) : null;
 
-  const updateTrip = async (updatedTrip: Trip) => {
-    if (isGuest) {
-      const newTrips = trips.map(t => t.id === updatedTrip.id ? updatedTrip : t);
-      setTrips(newTrips);
-      localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify(newTrips));
-      return;
-    }
-    if (!user) return;
-    await setDoc(doc(db, 'trips', updatedTrip.id), { ...updatedTrip, uid: user.uid });
+  const removeUndefined = (obj: any) => {
+    return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
+  };
+
+  const handleFirestoreError = (error: unknown, operationType: string, path: string | null) => {
+    const errInfo = {
+      error: error instanceof Error ? error.message : String(error),
+      authInfo: {
+        userId: auth.currentUser?.uid,
+        email: auth.currentUser?.email,
+        emailVerified: auth.currentUser?.emailVerified,
+        isAnonymous: auth.currentUser?.isAnonymous,
+        tenantId: auth.currentUser?.tenantId,
+        providerInfo: auth.currentUser?.providerData.map(provider => ({
+          providerId: provider.providerId,
+          displayName: provider.displayName,
+          email: provider.email,
+          photoUrl: provider.photoURL
+        })) || []
+      },
+      operationType,
+      path
+    };
+    console.error('Firestore Error: ', JSON.stringify(errInfo));
+    throw new Error(JSON.stringify(errInfo));
   };
 
   const addTrip = async (trip: Trip) => {
+    const tripWithDefaults = { ...trip, notificationsEnabled: true };
     if (isGuest) {
-      const newTrips = [trip, ...trips];
+      const newTrips = [tripWithDefaults, ...trips];
       setTrips(newTrips);
       localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify(newTrips));
       return;
     }
     if (!user) return;
-    await setDoc(doc(db, 'trips', trip.id), { ...trip, uid: user.uid });
+    try {
+      await setDoc(doc(db, 'trips', trip.id), removeUndefined({ ...tripWithDefaults, uid: user.uid }));
+    } catch (error) {
+      handleFirestoreError(error, 'create', 'trips');
+    }
   };
 
   const deleteTrip = async (id: string) => {
@@ -196,7 +219,26 @@ export default function App() {
       return;
     }
     if (!user) return;
-    await deleteDoc(doc(db, 'trips', id));
+    try {
+      await deleteDoc(doc(db, 'trips', id));
+    } catch (error) {
+      handleFirestoreError(error, 'delete', 'trips');
+    }
+  };
+
+  const updateTrip = async (updatedTrip: Trip) => {
+    if (isGuest) {
+      const newTrips = trips.map(t => t.id === updatedTrip.id ? updatedTrip : t);
+      setTrips(newTrips);
+      localStorage.setItem(STORAGE_KEYS.TRIPS, JSON.stringify(newTrips));
+      return;
+    }
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'trips', updatedTrip.id), removeUndefined({ ...updatedTrip, uid: user.uid }));
+    } catch (error) {
+      handleFirestoreError(error, 'update', 'trips');
+    }
   };
 
   const addItem = async (item: InventoryItem) => {
@@ -207,7 +249,11 @@ export default function App() {
       return;
     }
     if (!user) return;
-    await setDoc(doc(db, 'inventory', item.id), { ...item, uid: user.uid });
+    try {
+      await setDoc(doc(db, 'inventory', item.id), removeUndefined({ ...item, uid: user.uid }));
+    } catch (error) {
+      handleFirestoreError(error, 'create', 'inventory');
+    }
   };
 
   const deleteItem = async (id: string) => {
@@ -218,7 +264,11 @@ export default function App() {
       return;
     }
     if (!user) return;
-    await deleteDoc(doc(db, 'inventory', id));
+    try {
+      await deleteDoc(doc(db, 'inventory', id));
+    } catch (error) {
+      handleFirestoreError(error, 'delete', 'inventory');
+    }
   };
 
   const updateItem = async (item: InventoryItem) => {
@@ -229,7 +279,11 @@ export default function App() {
       return;
     }
     if (!user) return;
-    await setDoc(doc(db, 'inventory', item.id), { ...item, uid: user.uid });
+    try {
+      await setDoc(doc(db, 'inventory', item.id), removeUndefined({ ...item, uid: user.uid }));
+    } catch (error) {
+      handleFirestoreError(error, 'update', 'inventory');
+    }
   };
 
   const addList = async (list: CustomList) => {
@@ -240,7 +294,11 @@ export default function App() {
       return;
     }
     if (!user) return;
-    await setDoc(doc(db, 'customLists', list.id), { ...list, uid: user.uid });
+    try {
+      await setDoc(doc(db, 'customLists', list.id), removeUndefined({ ...list, uid: user.uid }));
+    } catch (error) {
+      handleFirestoreError(error, 'create', 'customLists');
+    }
   };
 
   const deleteList = async (id: string) => {
@@ -251,7 +309,11 @@ export default function App() {
       return;
     }
     if (!user) return;
-    await deleteDoc(doc(db, 'customLists', id));
+    try {
+      await deleteDoc(doc(db, 'customLists', id));
+    } catch (error) {
+      handleFirestoreError(error, 'delete', 'customLists');
+    }
   };
 
   const updateList = async (list: CustomList) => {
@@ -262,7 +324,11 @@ export default function App() {
       return;
     }
     if (!user) return;
-    await setDoc(doc(db, 'customLists', list.id), { ...list, uid: user.uid });
+    try {
+      await setDoc(doc(db, 'customLists', list.id), removeUndefined({ ...list, uid: user.uid }));
+    } catch (error) {
+      handleFirestoreError(error, 'update', 'customLists');
+    }
   };
 
   const updateProfile = async (updatedProfile: UserProfile) => {
@@ -272,7 +338,11 @@ export default function App() {
       return;
     }
     if (!user) return;
-    await setDoc(doc(db, 'users', user.uid), updatedProfile);
+    try {
+      await setDoc(doc(db, 'users', user.uid), removeUndefined(updatedProfile));
+    } catch (error) {
+      handleFirestoreError(error, 'update', 'users');
+    }
   };
 
   const handleSignOut = async () => {
@@ -286,6 +356,38 @@ export default function App() {
       return;
     }
     await auth.signOut();
+  };
+
+  const handleDeleteAccount = async () => {
+    if (isGuest) {
+      setIsGuest(false);
+      localStorage.clear();
+      setProfile(null);
+      setInventory([]);
+      setTrips([]);
+      setCustomLists([]);
+      return;
+    }
+    if (!user) return;
+
+    try {
+      // Delete all user data in Firestore
+      const inventoryDocs = await getDocs(query(collection(db, 'inventory'), where('uid', '==', user.uid)));
+      await Promise.all(inventoryDocs.docs.map(doc => deleteDoc(doc.ref)));
+
+      const tripDocs = await getDocs(query(collection(db, 'trips'), where('uid', '==', user.uid)));
+      await Promise.all(tripDocs.docs.map(doc => deleteDoc(doc.ref)));
+
+      const listDocs = await getDocs(query(collection(db, 'customLists'), where('uid', '==', user.uid)));
+      await Promise.all(listDocs.docs.map(doc => deleteDoc(doc.ref)));
+
+      await deleteDoc(doc(db, 'users', user.uid));
+
+      // Sign out
+      await auth.signOut();
+    } catch (error) {
+      console.error('Error deleting account:', error);
+    }
   };
 
   if (loading) {
@@ -404,6 +506,7 @@ export default function App() {
             profile={profile}
             customLists={customLists}
             updateTrip={updateTrip} 
+            onDeleteTrip={deleteTrip}
             onBack={() => setActiveTripId(null)} 
           />
         ) : activeTab === 'inventory' ? (
@@ -425,6 +528,7 @@ export default function App() {
             inventory={inventory}
             onUpdateProfile={updateProfile}
             onSignOut={handleSignOut}
+            onDeleteAccount={handleDeleteAccount}
           />
         ) : (
           <TripListView 

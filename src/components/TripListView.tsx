@@ -1,9 +1,12 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import DatePicker from 'react-datepicker';
+import { format, parseISO } from 'date-fns';
 import { Trip, InventoryItem, UserProfile, CustomList, PackingItem } from '../types';
-import { TRIP_TYPES, TRANSPORTATION_TYPES } from '../data/constants';
-import { Map, Calendar, Plus, ChevronRight, Plane, Filter, ArrowUpDown, Image as ImageIcon, Download, Upload, X, Car } from 'lucide-react';
+import { TRIP_TYPES, TRANSPORTATION_TYPES, SUGGESTED_ITEMS } from '../data/constants';
+import { Map, Calendar, Plus, ChevronRight, Plane, Filter, ArrowUpDown, Image as ImageIcon, Download, X, Car } from 'lucide-react';
 import { resizeImage } from '../utils/image';
+import { formatDateRange } from '../utils/date';
 
 interface Props {
   trips: Trip[];
@@ -22,9 +25,10 @@ export default function TripListView({ trips, inventory, profile, customLists, o
   const [isCreating, setIsCreating] = useState(false);
   const [newTripName, setNewTripName] = useState('');
   const [newTripType, setNewTripType] = useState(TRIP_TYPES[0]);
+  const [newTripCustomType, setNewTripCustomType] = useState('');
   const [newTripTransportation, setNewTripTransportation] = useState(TRANSPORTATION_TYPES[0]);
-  const [newTripStartDate, setNewTripStartDate] = useState('');
-  const [newTripEndDate, setNewTripEndDate] = useState('');
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
+  const [startDate, endDate] = dateRange;
   const [newTripImage, setNewTripImage] = useState<string | undefined>();
   
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -86,18 +90,41 @@ export default function TripListView({ trips, inventory, profile, customLists, o
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('must-bring');
 
-  const handleCreateTrip = (e: React.FormEvent) => {
+  const handleCreateTrip = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTripName.trim() || !newTripStartDate || !newTripEndDate) return;
+    if (!newTripName.trim() || !startDate || !endDate) return;
+
+    const formattedStartDate = format(startDate, 'yyyy-MM-dd');
+    const formattedEndDate = format(endDate, 'yyyy-MM-dd');
 
     let initialItems: PackingItem[] = [];
     if (selectedTemplateId === 'must-bring') {
-      initialItems = inventory.filter(item => item.isMaster).map(item => ({
+      // Add items marked as "Must Bring" in inventory
+      const masterItems = inventory.filter(item => item.isMaster).map(item => ({
         id: Math.random().toString(36).substring(2, 9),
         name: item.name,
         category: item.category,
-        isPacked: false
+        isPacked: false,
+        quantity: item.quantity || 1
       }));
+      
+      // Also add "All Essentials" suggested items
+      const essentialItems = (SUGGESTED_ITEMS['All'] || []).map(item => ({
+        id: Math.random().toString(36).substring(2, 9),
+        name: item.name,
+        category: item.category,
+        isPacked: false,
+        quantity: 1
+      }));
+
+      // Combine and avoid duplicates by name
+      const combined = [...masterItems];
+      essentialItems.forEach(item => {
+        if (!combined.some(c => c.name.toLowerCase() === item.name.toLowerCase())) {
+          combined.push(item);
+        }
+      });
+      initialItems = combined;
     } else if (selectedTemplateId !== 'none') {
       const list = customLists?.find(l => l.id === selectedTemplateId);
       if (list) {
@@ -105,41 +132,74 @@ export default function TripListView({ trips, inventory, profile, customLists, o
           id: Math.random().toString(36).substring(2, 9),
           name: item.name,
           category: item.category,
-          isPacked: false
+          isPacked: false,
+          quantity: 1
         }));
       }
     }
 
+    const finalTripType = newTripType === 'Other' ? newTripCustomType.trim() || 'Other' : newTripType;
+
     const newTrip: Trip = {
       id: Math.random().toString(36).substring(2, 9),
       name: newTripName.trim(),
-      tripType: newTripType,
+      tripType: finalTripType,
       transportationType: newTripTransportation,
-      startDate: newTripStartDate,
-      endDate: newTripEndDate,
-      duration: `${newTripStartDate} ${t('trips.to')} ${newTripEndDate}`,
+      startDate: formattedStartDate,
+      endDate: formattedEndDate,
+      duration: `${formattedStartDate} ${t('trips.to')} ${formattedEndDate}`,
       items: initialItems,
       createdAt: Date.now(),
       imageUrl: newTripImage
     };
 
-    onAddTrip(newTrip);
-    setNewTripName('');
-    setNewTripStartDate('');
-    setNewTripEndDate('');
-    setNewTripImage(undefined);
+    // Optimistically close modal and reset fields
     setIsCreating(false);
+    setNewTripName('');
+    setDateRange([null, null]);
+    setNewTripImage(undefined);
+
+    // Navigate immediately to avoid delay
+    onSelectTrip(newTrip.id);
+
+    try {
+      await onAddTrip(newTrip);
+    } catch (err) {
+      console.error('Failed to create trip', err);
+      alert(t('trips.createError') || 'Failed to create trip. Please try again.');
+    }
   };
 
-  const filteredAndSortedTrips = useMemo(() => {
-    let result = [...trips];
+  const { upcomingTrips, pastTrips } = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    let filtered = [...trips];
     
     if (filterType !== 'All') {
-      result = result.filter(t => t.tripType === filterType);
+      filtered = filtered.filter(t => t.tripType === filterType);
     }
-    
-    result.sort((a, b) => {
-      if (sortBy === 'newest') return b.createdAt - a.createdAt;
+
+    const upcoming: Trip[] = [];
+    const past: Trip[] = [];
+
+    filtered.forEach(trip => {
+      const tripEndDate = trip.endDate ? parseISO(trip.endDate) : null;
+      if (tripEndDate && tripEndDate < now) {
+        past.push(trip);
+      } else {
+        upcoming.push(trip);
+      }
+    });
+
+    // Sort upcoming: nearest first
+    upcoming.sort((a, b) => {
+      if (sortBy === 'newest') {
+        const dateA = a.startDate ? parseISO(a.startDate).getTime() : 0;
+        const dateB = b.startDate ? parseISO(b.startDate).getTime() : 0;
+        return dateA - dateB;
+      }
+      // Other sorts
       if (sortBy === 'oldest') return a.createdAt - b.createdAt;
       if (sortBy === 'name') return a.name.localeCompare(b.name);
       if (sortBy === 'progress') {
@@ -147,11 +207,79 @@ export default function TripListView({ trips, inventory, profile, customLists, o
         const progB = b.items.length ? b.items.filter(i => i.isPacked).length / b.items.length : 0;
         return progB - progA;
       }
-      return 0;
+      return b.createdAt - a.createdAt;
     });
-    
-    return result;
+
+    // Sort past: most recent first
+    past.sort((a, b) => {
+      const dateA = a.endDate ? parseISO(a.endDate).getTime() : 0;
+      const dateB = b.endDate ? parseISO(b.endDate).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return { upcomingTrips: upcoming, pastTrips: past };
   }, [trips, filterType, sortBy]);
+
+  const renderTripCard = (trip: Trip) => {
+    const packedCount = trip.items.filter(i => i.isPacked).length;
+    const totalCount = trip.items.length;
+    const progress = totalCount === 0 ? 0 : Math.round((packedCount / totalCount) * 100);
+
+    return (
+      <div
+        key={trip.id}
+        onClick={() => onSelectTrip(trip.id)}
+        className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden hover:border-emerald-500/50 hover:shadow-md transition-all text-left group flex flex-col sm:flex-row relative cursor-pointer"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectTrip(trip.id); }}
+      >
+        <div className="h-40 sm:h-auto sm:w-56 relative shrink-0">
+          {trip.imageUrl ? (
+            <img src={trip.imageUrl} alt={trip.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-emerald-600 to-teal-700" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          
+          <div className="absolute bottom-3 left-3 right-3">
+            <h3 className="text-2xl font-bold text-white drop-shadow-md mb-2 truncate">
+              {trip.name}
+            </h3>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-[10px] text-white font-medium whitespace-nowrap">
+                <Plane className="w-2.5 h-2.5 text-emerald-400" /> 
+                {t(`type.${trip.tripType}`, trip.tripType)}
+              </span>
+              {trip.transportationType && (
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-[10px] text-white font-medium whitespace-nowrap">
+                  <Car className="w-2.5 h-2.5 text-blue-400" /> 
+                  {t(`transport.${trip.transportationType}`, trip.transportationType)}
+                </span>
+              )}
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-[10px] text-white font-medium whitespace-nowrap">
+                <Calendar className="w-2.5 h-2.5 text-purple-400" /> 
+                {trip.startDate && trip.endDate ? formatDateRange(trip.startDate, trip.endDate) : trip.duration}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-emerald-400 rounded-full" 
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-medium text-white/80">{packedCount}/{totalCount}</span>
+            </div>
+          </div>
+
+          {profile?.avatarUrl && (
+            <img src={profile.avatarUrl} alt="Avatar" className="absolute top-3 left-3 w-8 h-8 rounded-full border-2 border-white/20 shadow-sm object-cover" />
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -171,15 +299,15 @@ export default function TripListView({ trips, inventory, profile, customLists, o
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 transition-colors"
+              className="bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl px-4 py-2 flex items-center justify-center gap-2 transition-colors"
               title={t('trips.import')}
             >
-              <Upload className="w-5 h-5" />
-              <span className="hidden sm:inline">{t('trips.import')}</span>
+              <Download className="w-5 h-5" />
+              <span>{t('trips.import')}</span>
             </button>
             <button
               onClick={() => setIsCreating(true)}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 transition-colors"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-4 py-2 flex items-center justify-center gap-2 transition-colors"
             >
               <Plus className="w-5 h-5" />
               <span>{t('trips.new')}</span>
@@ -198,7 +326,7 @@ export default function TripListView({ trips, inventory, profile, customLists, o
               className="bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 flex-1 sm:flex-none"
             >
               <option value="All">{t('trips.allTypes')}</option>
-              {TRIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              {TRIP_TYPES.map(type => <option key={type} value={type}>{t(`type.${type}`, type)}</option>)}
             </select>
           </div>
           <div className="flex-1 flex items-center gap-2 sm:justify-end">
@@ -261,48 +389,51 @@ export default function TripListView({ trips, inventory, profile, customLists, o
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-700">{t('trips.template')}</label>
-              <select
-                value={selectedTemplateId}
-                onChange={(e) => setSelectedTemplateId(e.target.value)}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-              >
-                <option value="must-bring">{t('trips.defaultTemplate')}</option>
-                <option value="none">{t('trips.emptyList')}</option>
-                {customLists.map(list => (
-                  <option key={list.id} value={list.id}>{list.name}</option>
-                ))}
-              </select>
-            </div>
-            
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {newTripType === 'Other' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-stone-700">{t('trips.customType')}</label>
+                  <input
+                    type="text"
+                    value={newTripCustomType}
+                    onChange={(e) => setNewTripCustomType(e.target.value)}
+                    placeholder="e.g., Photography Trip"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-stone-400" />
-                  {t('trips.startDate')}
+                  {t('trips.dates')}
                 </label>
-                <input
-                  type="date"
-                  value={newTripStartDate}
-                  onChange={(e) => setNewTripStartDate(e.target.value)}
+                <DatePicker
+                  selectsRange={true}
+                  startDate={startDate}
+                  endDate={endDate}
+                  onChange={(update) => {
+                    setDateRange(update as [Date | null, Date | null]);
+                  }}
+                  placeholderText={t('trips.selectDates')}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  wrapperClassName="w-full"
+                  dateFormat="yyyy-MM-dd"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-stone-400" />
-                  {t('trips.endDate')}
-                </label>
-                <input
-                  type="date"
-                  value={newTripEndDate}
-                  onChange={(e) => setNewTripEndDate(e.target.value)}
-                  min={newTripStartDate}
+                <label className="text-sm font-medium text-stone-700">{t('trips.template')}</label>
+                <select
+                  value={selectedTemplateId}
+                  onChange={(e) => setSelectedTemplateId(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                  required
-                />
+                >
+                  <option value="must-bring">{t('trips.defaultTemplate')}</option>
+                  <option value="none">{t('trips.emptyList')}</option>
+                  {customLists.map(list => (
+                    <option key={list.id} value={list.id}>{list.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
             
@@ -336,13 +467,13 @@ export default function TripListView({ trips, inventory, profile, customLists, o
               <button
                 type="button"
                 onClick={() => setIsCreating(false)}
-                className="px-5 py-2.5 text-stone-600 font-medium hover:bg-stone-100 rounded-xl transition-colors"
+                className="px-4 py-2.5 text-stone-600 font-medium hover:bg-stone-100 rounded-xl transition-colors"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="submit"
-                className="bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl px-6 py-2.5 transition-colors"
+                className="bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl px-4 py-2.5 transition-colors"
               >
                 {t('trips.createAction')}
               </button>
@@ -351,76 +482,25 @@ export default function TripListView({ trips, inventory, profile, customLists, o
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
-        {filteredAndSortedTrips.map(trip => {
-          const packedCount = trip.items.filter(i => i.isPacked).length;
-          const totalCount = trip.items.length;
-          const progress = totalCount === 0 ? 0 : Math.round((packedCount / totalCount) * 100);
+      <div className="grid grid-cols-1 gap-8">
+        {upcomingTrips.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.upcoming')}</h3>
+            <div className="grid grid-cols-1 gap-4">
+              {upcomingTrips.map(renderTripCard)}
+            </div>
+          </div>
+        )}
 
-          return (
-            <button
-              key={trip.id}
-              onClick={() => onSelectTrip(trip.id)}
-              className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden hover:border-emerald-500/50 hover:shadow-md transition-all text-left group flex flex-col sm:flex-row relative"
-            >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteTrip(trip.id);
-                }}
-                className="absolute top-3 right-3 p-2 bg-white/80 hover:bg-red-50 text-stone-400 hover:text-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-all z-10"
-                title={t('common.delete')}
-              >
-                <X className="w-4 h-4" />
-              </button>
-              {trip.imageUrl ? (
-                <div className="h-32 sm:h-auto sm:w-48 relative shrink-0">
-                  <img src={trip.imageUrl} alt={trip.name} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent sm:bg-gradient-to-r" />
-                  {profile?.avatarUrl && (
-                    <img src={profile.avatarUrl} alt="Avatar" className="absolute bottom-3 left-3 w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover" />
-                  )}
-                </div>
-              ) : (
-                <div className="h-2 sm:h-auto sm:w-2 bg-emerald-500 shrink-0" />
-              )}
-              
-              <div className="p-5 flex-1 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-stone-900 group-hover:text-emerald-600 transition-colors flex items-center gap-2">
-                    {!trip.imageUrl && profile?.avatarUrl && (
-                      <img src={profile.avatarUrl} alt="Avatar" className="w-6 h-6 rounded-full border border-stone-200 object-cover" />
-                    )}
-                    {trip.name}
-                  </h3>
-                  <div className="flex items-center gap-3 mt-1 text-sm text-stone-500">
-                    <span className="flex items-center gap-1"><Plane className="w-3.5 h-3.5" /> {t(`type.${trip.tripType}`, trip.tripType)}</span>
-                    {trip.transportationType && (
-                      <>
-                        <span>&bull;</span>
-                        <span className="flex items-center gap-1"><Car className="w-3.5 h-3.5" /> {t(`transport.${trip.transportationType}`, trip.transportationType)}</span>
-                      </>
-                    )}
-                    <span>&bull;</span>
-                    <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {trip.startDate && trip.endDate ? `${trip.startDate} ${t('trips.to')} ${trip.endDate}` : trip.duration}</span>
-                  </div>
-                  <div className="mt-4 flex items-center gap-3">
-                    <div className="flex-1 h-1.5 bg-stone-100 rounded-full overflow-hidden w-32 sm:w-48">
-                      <div 
-                        className="h-full bg-emerald-500 rounded-full" 
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-medium text-stone-500">{t('trips.packedCount', { packed: packedCount, total: totalCount })}</span>
-                  </div>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-stone-50 flex items-center justify-center group-hover:bg-emerald-50 transition-colors shrink-0 ml-4">
-                  <ChevronRight className="w-5 h-5 text-stone-400 group-hover:text-emerald-500" />
-                </div>
-              </div>
-            </button>
-          );
-        })}
+        {pastTrips.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.past')}</h3>
+            <div className="grid grid-cols-1 gap-4 opacity-75 grayscale-[0.2]">
+              {pastTrips.map(renderTripCard)}
+            </div>
+          </div>
+        )}
+
         {trips.length === 0 && !isCreating && (
           <div className="text-center py-16 bg-white rounded-2xl border border-stone-200 border-dashed">
             <Plane className="w-12 h-12 text-stone-300 mx-auto mb-3" />
@@ -428,14 +508,14 @@ export default function TripListView({ trips, inventory, profile, customLists, o
             <p className="text-stone-500 mt-1 mb-6">{t('trips.noTripsTagline')}</p>
             <button
               onClick={() => setIsCreating(true)}
-              className="bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl px-6 py-2.5 inline-flex items-center gap-2 transition-colors"
+              className="bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl px-4 py-2 inline-flex items-center gap-2 transition-colors"
             >
               <Plus className="w-5 h-5" />
               {t('trips.createTitle')}
             </button>
           </div>
         )}
-        {trips.length > 0 && filteredAndSortedTrips.length === 0 && (
+        {trips.length > 0 && upcomingTrips.length === 0 && pastTrips.length === 0 && (
           <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
             <p className="text-stone-500">{t('trips.noMatch')}</p>
             <button 

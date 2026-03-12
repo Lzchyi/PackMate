@@ -1,5 +1,6 @@
 export type Category = 
   | 'Essentials' 
+  | 'General Travel Essentials'
   | 'Clothing' 
   | 'Electronics & Gear' 
   | 'Toiletries' 
@@ -7,13 +8,15 @@ export type Category =
   | 'Accessories'
   | 'Skincare'
   | 'Makeup'
-  | 'Hair Care';
+  | 'Hair Care'
+  | 'Other';
 
 export interface InventoryItem {
   id: string;
   name: string;
   category: Category;
   isMaster?: boolean;
+  quantity?: number;
 }
 
 export interface PackingItem {
@@ -21,6 +24,8 @@ export interface PackingItem {
   name: string;
   category: Category;
   isPacked: boolean;
+  quantity?: number;
+  medicineName?: string;
 }
 
 export interface Trip {
@@ -34,6 +39,7 @@ export interface Trip {
   items: PackingItem[];
   createdAt: number;
   imageUrl?: string;
+  notificationsEnabled?: boolean;
 }
 
 export interface CustomList {
@@ -50,5 +56,6 @@ export interface UserProfile {
   mustBringItems?: { id: string; name: string; category: Category }[];
   avatarUrl?: string;
   language?: 'en-GB' | 'zh-CN';
+  masterNotificationsEnabled?: boolean;
 }
 

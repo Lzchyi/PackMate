@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserProfile, InventoryItem } from '../types';
-import { User, Save, LogOut, ShieldCheck, Globe, Shield, X } from 'lucide-react';
+import { User, Save, LogOut, ShieldCheck, Globe, Shield, X, Camera, Trash2, Bell, BellOff, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { logout, db } from '../firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { storage } from '../firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { User as FirebaseUser } from 'firebase/auth';
+import ConfirmationModal from './ConfirmationModal';
 
 interface Props {
   profile: UserProfile | null;
@@ -13,13 +14,20 @@ interface Props {
   inventory: InventoryItem[];
   onUpdateProfile: (profile: UserProfile) => Promise<void>;
   onSignOut: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
 }
 
-export default function ProfileView({ profile, user, isGuest, inventory, onUpdateProfile, onSignOut }: Props) {
+export default function ProfileView({ profile, user, isGuest, inventory, onUpdateProfile, onSignOut, onDeleteAccount }: Props) {
   const { t, i18n } = useTranslation();
   const [name, setName] = useState(profile?.name || '');
   const [isEditing, setIsEditing] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+  const [showNotificationInfo, setShowNotificationInfo] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const mustBringItems = inventory.filter(item => item.isMaster);
 
@@ -38,6 +46,42 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user || !profile) return;
+
+    try {
+      const storageRef = ref(storage, `avatars/${user.uid}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      await onUpdateProfile({
+        ...profile,
+        avatarUrl: downloadURL
+      });
+    } catch (err) {
+      console.error('Failed to upload image', err);
+    }
+  };
+
+  const handleRemoveImage = async () => {
+    if (!user || !profile) return;
+
+    try {
+      const storageRef = ref(storage, `avatars/${user.uid}`);
+      await deleteObject(storageRef).catch(() => {}); // Ignore if file doesn't exist
+      await onUpdateProfile({
+        ...profile,
+        avatarUrl: ''
+      });
+    } catch (err) {
+      console.error('Failed to remove image', err);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   const handleLanguageChange = async (lang: 'en-GB' | 'zh-CN') => {
     if (!profile) return;
     try {
@@ -48,6 +92,18 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
       i18n.changeLanguage(lang);
     } catch (err) {
       console.error('Failed to update language', err);
+    }
+  };
+
+  const handleToggleMasterNotifications = async () => {
+    if (!profile) return;
+    try {
+      await onUpdateProfile({
+        ...profile,
+        masterNotificationsEnabled: !profile.masterNotificationsEnabled
+      });
+    } catch (err) {
+      console.error('Failed to update notifications', err);
     }
   };
 
@@ -72,12 +128,30 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
             {profile?.avatarUrl ? (
               <img src={profile.avatarUrl} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-sm" />
             ) : (
-              <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 border-4 border-white shadow-sm">
-                <User className="w-10 h-10" />
+              <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 border-4 border-white shadow-sm text-2xl font-bold">
+                {profile?.name ? getInitials(profile.name) : <User className="w-10 h-10" />}
               </div>
             )}
+            <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-full">
+              <button onClick={() => fileInputRef.current?.click()} className="p-1.5 bg-white rounded-full text-stone-700 hover:text-emerald-600">
+                <Camera className="w-4 h-4" />
+              </button>
+              {profile?.avatarUrl && (
+                <button onClick={() => setIsDeleteModalOpen(true)} className="p-1.5 bg-white rounded-full text-stone-700 hover:text-red-600">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
           </div>
         </div>
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleRemoveImage}
+          title={t('profile.removePhoto')}
+          message={t('profile.removePhotoConfirm')}
+        />
 
         {isEditing ? (
           <form onSubmit={handleSave} className="space-y-6">
@@ -127,7 +201,7 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
                 {t('common.edit')}
               </button>
               <button
-                onClick={onSignOut}
+                onClick={() => setIsSignOutModalOpen(true)}
                 className="px-6 py-2.5 text-red-600 hover:bg-red-50 font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 <LogOut className="w-4 h-4" />
@@ -138,7 +212,41 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
         )}
       </div>
 
+      <ConfirmationModal
+        isOpen={isSignOutModalOpen}
+        onClose={() => setIsSignOutModalOpen(false)}
+        onConfirm={onSignOut}
+        title={t('profile.signOutConfirmTitle')}
+        message={t('profile.signOutConfirmMessage')}
+      />
+
       <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${profile?.masterNotificationsEnabled !== false ? 'bg-emerald-100 text-emerald-600' : 'bg-stone-100 text-stone-600'}`}>
+              {profile?.masterNotificationsEnabled !== false ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold">{t('profile.notifications')}</h3>
+                <button 
+                  onClick={() => setShowNotificationInfo(true)}
+                  className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <p className="text-xs text-stone-500">{t('profile.notificationsDescription')}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleToggleMasterNotifications}
+            className={`w-12 h-6 rounded-full transition-colors relative ${profile?.masterNotificationsEnabled !== false ? 'bg-emerald-500' : 'bg-stone-300'}`}
+          >
+            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profile?.masterNotificationsEnabled !== false ? 'right-1' : 'left-1'}`} />
+          </button>
+        </div>
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
@@ -146,33 +254,33 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
             </div>
             <h3 className="font-semibold">{t('profile.language')}</h3>
           </div>
-          <div className="flex bg-stone-100 p-1 rounded-xl">
+          <div className="flex flex-nowrap bg-stone-100 p-1 rounded-xl overflow-x-auto no-scrollbar">
             <button
               onClick={() => handleLanguageChange('en-GB')}
-              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${i18n.language === 'en-GB' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${i18n.language === 'en-GB' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
-              English (UK)
+              English
             </button>
             <button
               onClick={() => handleLanguageChange('zh-CN')}
-              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${i18n.language === 'zh-CN' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${i18n.language === 'zh-CN' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
             >
               简体中文
             </button>
           </div>
         </div>
 
-        <button
-          onClick={() => setShowPrivacy(true)}
-          className="w-full flex items-center justify-between p-4 rounded-xl border border-stone-100 hover:bg-stone-50 transition-colors"
-        >
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setShowPrivacy(true)}
+            className="flex items-center gap-3 flex-1 text-left p-0"
+          >
             <div className="p-2 bg-stone-100 text-stone-600 rounded-lg">
               <Shield className="w-5 h-5" />
             </div>
             <h3 className="font-semibold">{t('profile.privacy')}</h3>
-          </div>
-        </button>
+          </button>
+        </div>
       </div>
 
       {profile && (
@@ -196,8 +304,8 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
               mustBringItems.map(item => (
                 <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border border-stone-100 bg-stone-50/50 transition-colors">
                   <div>
-                    <p className="font-medium text-stone-900 text-sm">{item.name}</p>
-                    <p className="text-xs text-stone-500">{item.category}</p>
+                    <p className="font-medium text-stone-900 text-sm">{t(`item.${item.name}`, item.name)}</p>
+                    <p className="text-xs text-stone-500">{t(`category.${item.category}`, item.category)}</p>
                   </div>
                 </div>
               ))
@@ -205,6 +313,16 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
           </div>
         </div>
       )}
+
+      <div className="pt-4">
+        <button
+          onClick={() => setIsDeleteAccountModalOpen(true)}
+          className="w-full flex items-center justify-center gap-2 p-4 rounded-xl text-red-600 hover:bg-red-50 transition-colors font-medium border border-red-100"
+        >
+          <Trash2 className="w-5 h-5" />
+          {t('profile.deleteAccount')}
+        </button>
+      </div>
 
       {showPrivacy && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -225,8 +343,81 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
               onClick={() => setShowPrivacy(false)}
               className="w-full mt-8 bg-stone-900 text-white font-medium rounded-xl px-6 py-3 hover:bg-stone-800 transition-colors"
             >
-              {t('common.cancel')}
+              {t('common.close')}
             </button>
+          </div>
+        </div>
+      )}
+
+      {showNotificationInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setShowNotificationInfo(false)} />
+          <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-md p-8 text-center">
+            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Bell className="w-8 h-8" />
+            </div>
+            <h3 className="text-2xl font-bold mb-3">{t('profile.notificationsInfoTitle')}</h3>
+            <p className="text-stone-600 leading-relaxed mb-8 whitespace-nowrap">
+              {t('profile.notificationsInfoMessage')}
+            </p>
+            <button
+              onClick={() => setShowNotificationInfo(false)}
+              className="w-full bg-stone-900 text-white font-medium rounded-xl px-6 py-3 hover:bg-stone-800 transition-colors"
+            >
+              {t('common.gotIt')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isDeleteAccountModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsDeleteAccountModalOpen(false)} />
+          <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-lg p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3 text-red-600">
+                <Trash2 className="w-6 h-6" />
+                <h3 className="text-2xl font-bold">{t('profile.deleteAccountConfirmTitle')}</h3>
+              </div>
+              <button onClick={() => setIsDeleteAccountModalOpen(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <p className="text-stone-600 leading-relaxed">
+                {t('profile.deleteAccountConfirmMessage')}
+              </p>
+              <div className="bg-red-50 border border-red-100 p-4 rounded-xl">
+                <p className="text-sm text-red-700 font-medium mb-3">
+                  {t('profile.deleteAccountWarning')}
+                </p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder={t('profile.deleteAccountInputPlaceholder')}
+                  className="w-full bg-white border border-red-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-8">
+              <button
+                onClick={() => setIsDeleteAccountModalOpen(false)}
+                className="flex-1 px-6 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                disabled={deleteConfirmText !== 'Delete Confirm'}
+                onClick={() => {
+                  onDeleteAccount();
+                  setIsDeleteAccountModalOpen(false);
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-stone-300 text-white font-medium rounded-xl px-6 py-3 transition-colors"
+              >
+                {t('profile.deleteAccountButton')}
+              </button>
+            </div>
           </div>
         </div>
       )}
