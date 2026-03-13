@@ -567,10 +567,10 @@ export default function InventoryView({
                   <label htmlFor="includeEssentials" className="text-sm text-stone-600 dark:text-stone-400 cursor-pointer select-none flex items-center gap-2">
                     {t('inventory.includeEssentials')}
                     <button onClick={() => setIsAboutModalOpen(true)} className="p-1 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-full">
-                      <Info className="w-4 h-4 text-stone-400 dark:text-stone-500" />
+                      <Info className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                     </button>
                     <button onClick={() => setIsSettingsModalOpen(true)} className="p-1 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-full">
-                      <Settings className="w-4 h-4 text-stone-400 dark:text-stone-500" />
+                      <Settings className="w-4 h-4 text-stone-500 dark:text-stone-400" />
                     </button>
                   </label>
                 </div>
@@ -888,60 +888,66 @@ export default function InventoryView({
         </div>
       )}
       {isAboutModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-2xl max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-2">{t('inventory.allEssentials')}</h3>
-            <p className="text-sm text-stone-600 mb-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl max-w-md w-full shadow-xl">
+            <h3 className="text-lg font-semibold mb-2 text-stone-900 dark:text-white">{t('inventory.allEssentials')}</h3>
+            <p className="text-sm text-stone-600 dark:text-stone-400 mb-4">
               {t('inventory.customizeHint', 'You can customize this list using the settings button beside it.')}
             </p>
-            <div className="flex-1 min-h-[200px] mb-4">
-              <Virtuoso
-                data={allEssentials}
-                itemContent={(i, item) => (
-                  <li className="list-disc ml-5 mb-1">{t(`item.${item.name}`, item.name)}</li>
-                )}
-              />
+            <div className="flex-1 min-h-[200px] mb-4 overflow-y-auto">
+              {allEssentials.length > 0 ? (
+                <ul>
+                  {allEssentials.map((item, i) => (
+                    <li key={i} className="list-disc ml-5 mb-1 text-stone-700 dark:text-stone-300">{t(`item.${item.name}`, item.name)}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-stone-500 dark:text-stone-400 text-center py-4">{t('inventory.noEssentials')}</p>
+              )}
             </div>
-            <button onClick={() => setIsAboutModalOpen(false)} className="mt-6 w-full py-2 bg-emerald-500 text-white rounded-xl">{t('inventory.close')}</button>
+            <button onClick={() => setIsAboutModalOpen(false)} className="mt-6 w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl transition-colors">{t('inventory.close')}</button>
           </div>
         </div>
       )}
       {isSettingsModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col">
-            <h3 className="text-lg font-semibold mb-4 shrink-0">{t('inventory.customizeEssentials')}</h3>
-            <div className="flex-1 min-h-[300px]">
-              <Virtuoso
-                data={allEssentials}
-                itemContent={(i, item) => (
-                  <div className="flex items-center gap-2 mb-2">
-                    <input 
-                      type="text" 
-                      value={item.name} 
-                      placeholder="Type or select item..."
-                      onChange={(e) => {
-                        const newEssentials = [...allEssentials];
-                        newEssentials[i].name = e.target.value;
-                        setAllEssentials(newEssentials);
-                      }} 
-                      className="flex-1 border border-stone-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" 
-                    />
-                    <button onClick={() => setAllEssentials(allEssentials.filter((_, index) => index !== i))} className="text-red-500 p-1 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
-                  </div>
-                )}
-              />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-xl">
+            <h3 className="text-lg font-semibold mb-4 shrink-0 text-stone-900 dark:text-white">{t('inventory.customizeEssentials')}</h3>
+            <div className="flex-1 min-h-[300px] overflow-y-auto">
+              {allEssentials.length > 0 ? (
+                <div className="space-y-2">
+                  {allEssentials.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2 mb-2">
+                      <input 
+                        type="text" 
+                        value={item.name} 
+                        placeholder="Type or select item..."
+                        onChange={(e) => {
+                          const newEssentials = [...allEssentials];
+                          newEssentials[i].name = e.target.value;
+                          setAllEssentials(newEssentials);
+                        }} 
+                        className="flex-1 border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-stone-900 dark:text-stone-100" 
+                      />
+                      <button onClick={() => setAllEssentials(allEssentials.filter((_, index) => index !== i))} className="text-red-500 dark:text-red-400 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-stone-500 dark:text-stone-400 text-center py-8">{t('inventory.noEssentials')}</p>
+              )}
             </div>
-            <div className="shrink-0 pt-4 mt-2 border-t border-stone-100">
+            <div className="shrink-0 pt-4 mt-2 border-t border-stone-100 dark:border-stone-700">
               <div className="flex justify-between items-center mb-4">
                 <button 
                   onClick={() => setIsSuggestedEssentialsOpen(true)} 
-                  className="text-emerald-600 font-medium hover:text-emerald-700 transition-colors"
+                  className="text-emerald-600 dark:text-emerald-400 font-medium hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
                   + {t('inventory.addItem')}
                 </button>
                 <button 
                   onClick={() => setIsSuggestedEssentialsOpen(true)}
-                  className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   {t('inventory.quickStart')}
