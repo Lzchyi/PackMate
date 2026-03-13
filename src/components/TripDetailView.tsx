@@ -22,6 +22,7 @@ interface Props {
   trip: Trip;
   inventory: InventoryItem[];
   profile: UserProfile | null;
+  isGuest: boolean;
   user: FirebaseUser | null;
   customLists: CustomList[];
   allEssentials: InventoryItem[];
@@ -33,7 +34,7 @@ interface Props {
 
 const SMART_SELECTION_ITEMS = ['camera', 'camera lens', 'data cable', 'gaming console'];
 
-export default function TripDetailView({ trip, inventory, profile, user, customLists, allEssentials, updateTrip, onDeleteTrip, onBack, onAddItem }: Props) {
+export default function TripDetailView({ trip, inventory, profile, isGuest, user, customLists, allEssentials, updateTrip, onDeleteTrip, onBack, onAddItem }: Props) {
   const { t } = useTranslation();
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>(
     CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: true }), {})
@@ -66,6 +67,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
   const participantProfiles = trip.participantProfiles || {};
   const [activeParticipantTab, setActiveParticipantTab] = useState<string>('all');
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [isRevokeModalOpen, setIsRevokeModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [inviteLink, setInviteLink] = useState('');
   const [editingQuantityId, setEditingQuantityId] = useState<string | null>(null);
@@ -855,19 +857,24 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
           );
         })}
         {filteredItems.length === 0 && totalCount > 0 && (
-          <div className="text-center py-16 bg-stone-50 rounded-2xl border border-stone-200 border-dashed">
-            <CheckCircle2 className="w-12 h-12 text-emerald-200 mx-auto mb-3" />
-            <h3 className="text-lg font-medium text-stone-900">
+          <div className="text-center py-16 bg-stone-50 dark:bg-stone-800 rounded-2xl border border-stone-200 dark:border-stone-700 border-dashed">
+            <CheckCircle2 className="w-12 h-12 text-emerald-200 dark:text-emerald-800 mx-auto mb-3" />
+            <h3 className="text-lg font-medium text-stone-900 dark:text-stone-100">
               {packingFilter === 'pending' ? t('trips.allPacked') : t('trips.noPacked')}
             </h3>
-            <p className="text-stone-500 mt-1 mb-6">
+            <p className="text-stone-500 dark:text-stone-400 mt-1 mb-6">
               {packingFilter === 'pending' 
                 ? t('trips.finishedPacking') 
                 : t('trips.startPacking')}
             </p>
             <button
-              onClick={() => setPackingFilter('all')}
-              className="text-emerald-600 font-medium hover:underline"
+              onClick={() => {
+                setPackingFilter('all');
+                if (activeParticipantTab === 'shared') {
+                  setActiveParticipantTab('all');
+                }
+              }}
+              className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline"
             >
               {t('trips.viewAll')}
             </button>
@@ -1698,6 +1705,20 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
         onConfirm={() => setIsCopiedModalOpen(false)}
         title={t('common.copied', 'Copied!')}
         message={t('trips.inviteCodeCopied', 'The invitation code has been copied to your clipboard.')}
+        confirmText={t('common.gotIt')}
+        variant="primary"
+      />
+
+      <ConfirmationModal
+        isOpen={isRevokeModalOpen}
+        onClose={() => setIsRevokeModalOpen(false)}
+        onConfirm={() => {
+          updateTrip({ ...trip, inviteToken: deleteField() as any });
+          setIsRevokeModalOpen(false);
+        }}
+        title={t('trips.revokeInvite', 'Revoke Invite Code')}
+        message={t('trips.revokeInviteConfirm', 'Are you sure you want to revoke this invite code? New invitees will not be able to join using this code.')}
+        confirmText={t('trips.revokeInvite', 'Revoke')}
       />
 
       <ConfirmationModal
@@ -1717,7 +1738,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
           <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsInviteModalOpen(false)} />
           <div className="relative bg-white dark:bg-stone-800 rounded-3xl shadow-xl w-full max-w-md flex flex-col overflow-hidden">
             <div className="px-6 py-5 border-b border-stone-100 dark:border-stone-700 flex items-center justify-between bg-white dark:bg-stone-800">
-              <h3 className="text-xl font-semibold dark:text-white">{t('trips.inviteCollaborator', 'Invite Collaborator')}</h3>
+              <h3 className="text-xl font-semibold dark:text-white">{t('trips.inviteCollaborator')}</h3>
               <button 
                 onClick={() => setIsInviteModalOpen(false)}
                 className="text-stone-400 dark:text-stone-300 hover:text-stone-600 dark:hover:text-stone-100 font-medium text-sm px-3 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
@@ -1727,15 +1748,15 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
             </div>
             <div className="p-6">
               <p className="text-stone-500 dark:text-stone-400 mb-4 text-sm">
-                {t('trips.inviteDescription', 'Share this 6-digit code to invite someone to pack with you. They will be able to add and manage their own items.')}
+                {t('trips.inviteDescription')}
               </p>
               
               <div className="mb-6">
-                {trip.inviteToken ? (
+                {typeof trip.inviteToken === 'string' ? (
                   <div className="space-y-3">
                     <div className="flex items-center justify-center gap-4 p-6 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700">
                       <span className="text-4xl font-mono font-bold tracking-[0.2em] text-stone-800 dark:text-stone-100">
-                        {trip.inviteToken}
+                        {typeof trip.inviteToken === 'string' ? trip.inviteToken : ''}
                       </span>
                       <button 
                         onClick={() => {
@@ -1749,7 +1770,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                       </button>
                     </div>
                     <button 
-                      onClick={() => updateTrip({ ...trip, inviteToken: deleteField() as any })}
+                      onClick={() => setIsRevokeModalOpen(true)}
                       className="text-red-500 text-sm font-medium hover:underline w-full text-center"
                     >
                       {t('trips.revokeInvite', 'Revoke Invite Code')}
@@ -1758,14 +1779,18 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                 ) : (
                   <button 
                     onClick={() => {
+                      if (isGuest) {
+                        toast.error(t('auth.guestCollaborationWarning', 'Collaboration features are only available for logged-in users.'));
+                        return;
+                      }
                       const token = Array.from({ length: 6 }, () => 
                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]
                       ).join('');
                       updateTrip({ ...trip, inviteToken: token });
                     }}
-                    className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors"
+                    className={`w-full py-3 ${isGuest ? 'bg-stone-400 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600'} text-white font-medium rounded-xl transition-colors`}
                   >
-                    {t('trips.generateLink', 'Generate Invite Code')}
+                    {t('trips.generateLink')}
                   </button>
                 )}
               </div>

@@ -16,6 +16,7 @@ interface Props {
   trips: Trip[];
   inventory: InventoryItem[];
   profile: UserProfile | null;
+  isGuest: boolean;
   customLists: CustomList[];
   allEssentials: InventoryItem[];
   onAddTrip: (trip: Trip) => void;
@@ -26,7 +27,7 @@ interface Props {
 
 type SortOption = 'newest' | 'oldest' | 'name' | 'progress';
 
-export default function TripListView({ trips, inventory, profile, customLists, allEssentials, onAddTrip, onDeleteTrip, onSelectTrip, onJoinTrip }: Props) {
+export default function TripListView({ trips, inventory, profile, isGuest, customLists, allEssentials, onAddTrip, onDeleteTrip, onSelectTrip, onJoinTrip }: Props) {
   const { t } = useTranslation();
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
@@ -279,8 +280,14 @@ export default function TripListView({ trips, inventory, profile, customLists, a
               <span>{t('trips.import')}</span>
             </button>
             <button
-              onClick={() => setIsJoining(true)}
-              className="bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-medium rounded-xl px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors"
+              onClick={() => {
+                if (isGuest) {
+                  toast.error(t('auth.guestCollaborationWarning', 'Collaboration features are only available for logged-in users.'));
+                  return;
+                }
+                setIsJoining(true);
+              }}
+              className={`px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors font-medium rounded-xl ${isGuest ? 'bg-stone-200 dark:bg-stone-700 text-stone-400 cursor-not-allowed' : 'bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300'}`}
             >
               <Users className="w-5 h-5" />
               <span className="whitespace-nowrap">{t('trips.join', 'Join')}</span>

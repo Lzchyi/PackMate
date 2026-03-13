@@ -548,14 +548,17 @@ export default function App() {
   };
 
   const updateProfile = async (updatedProfile: UserProfile) => {
+    console.log('Updating profile:', updatedProfile);
     if (isGuest) {
       setProfile(updatedProfile);
       localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(updatedProfile));
+      console.log('Profile updated in localStorage');
       return;
     }
     if (!user) return;
     try {
       await setDoc(doc(db, 'users', user.uid), removeUndefined(updatedProfile));
+      console.log('Profile updated in Firestore');
     } catch (error) {
       handleFirestoreError(error, 'update', 'users');
     }
@@ -730,6 +733,7 @@ export default function App() {
               trip={activeTrip} 
               inventory={inventory} 
               profile={profile}
+              isGuest={isGuest}
               user={user}
               customLists={customLists}
               allEssentials={allEssentials}
@@ -772,6 +776,7 @@ export default function App() {
               trips={trips} 
               inventory={inventory} 
               profile={profile}
+              isGuest={isGuest}
               customLists={customLists}
               allEssentials={allEssentials}
               onAddTrip={addTrip}

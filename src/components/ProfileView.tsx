@@ -84,15 +84,23 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
   };
 
   const handleLanguageChange = async (lang: 'en-GB' | 'zh-CN') => {
-    if (!profile) return;
-    try {
-      await onUpdateProfile({
-        ...profile,
-        language: lang
-      });
-      i18n.changeLanguage(lang);
-    } catch (err) {
-      console.error('Failed to update language', err);
+    console.log('Changing language to:', lang);
+    
+    // Always change language in i18next
+    i18n.changeLanguage(lang);
+    console.log('Language changed in i18next');
+
+    // Only update profile if it exists (user is logged in)
+    if (profile) {
+      try {
+        await onUpdateProfile({
+          ...profile,
+          language: lang
+        });
+        console.log('Profile updated in Firestore/localStorage');
+      } catch (err) {
+        console.error('Failed to update language in profile', err);
+      }
     }
   };
 
