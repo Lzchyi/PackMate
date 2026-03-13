@@ -1,24 +1,40 @@
-# PackMate
+# PackWise
 
-PackMate is your ultimate travel packing companion, designed to help you organize your gear, manage packing lists, and plan your trip itineraries with ease.
+PackWise is a comprehensive trip planning and inventory management application designed to make packing for your adventures stress-free. Whether you're planning a weekend getaway or a long-term expedition, PackWise helps you stay organized, track your gear, and ensure you never forget the essentials.
 
-## Features
+## Key Features
 
-- **Inventory Management**: Build and manage your personal gear library. Create custom packing lists for different types of trips.
-- **Trip Planning**: Create detailed trip itineraries with dates, destinations, and custom packing requirements.
-- **Must-Bring Essentials**: Automatically include essential items (like passports, chargers) in every new trip.
-- **Multi-Language Support**: Currently available in English and Chinese (zh-CN).
-- **Data Synchronization**: Securely sync your data across devices using Firebase.
+- **Trip Planning**: Manage your upcoming trips, track dates, and destinations in one place.
+- **Inventory Management**: Build and maintain your personal gear library. Categorize items, track quantities, and mark essential "must-bring" items.
+- **Custom Lists**: Create custom packing lists for different types of trips or use our preset templates to get started quickly.
+- **User Profiles**: Personalize your experience with avatars and language settings (English and Chinese supported).
+- **Responsive Design**: Fully responsive interface with support for both light and dark themes.
+- **Real-time Sync**: Powered by Firebase for seamless, real-time data synchronization across all your devices.
 
 ## Tech Stack
 
-- **Frontend**: React, TypeScript, Tailwind CSS
-- **Backend/Database**: Firebase (Firestore, Authentication)
-- **Internationalization**: i18next
+- **Frontend**: React 18+, TypeScript, Tailwind CSS
+- **Backend/Database**: Firebase (Authentication, Firestore, Storage)
+- **UI Components**: Lucide React, React Virtuoso
+- **Internationalization**: react-i18next
+- **Utilities**: date-fns, nanoid
 
 ## Getting Started
 
-1. Clone this repository.
-2. Install dependencies: `npm install`
-3. Set up your Firebase project and update `firebase-applet-config.json` with your credentials.
-4. Run the development server: `npm run dev`
+1. **Clone the repository.**
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Configure Firebase:**
+   - Create a Firebase project in the [Firebase Console](https://console.firebase.google.com/).
+   - Enable Firebase Authentication (Google) and Firestore.
+   - Update `firebase-applet-config.json` with your project credentials.
+4. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+## License
+
+This project is open-source and available for personal use.
