@@ -5,6 +5,7 @@ PackMate is a comprehensive trip planning and inventory management application d
 ## Key Features
 
 - **Trip Planning**: Manage your upcoming trips, track dates, and destinations in one place.
+- **Co-Planning**: Collaborate with friends and family in real-time to plan trips and manage inventory together.
 - **Inventory Management**: Build and maintain your personal gear library. Categorize items, track quantities, and mark essential "must-bring" items.
 - **Custom Lists**: Create custom packing lists for different types of trips or use our preset templates to get started quickly.
 - **User Profiles**: Personalize your experience with avatars and language settings (English and Chinese supported).
