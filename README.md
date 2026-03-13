@@ -1,6 +1,6 @@
-# PackWise
+# PackMate
 
-PackWise is a comprehensive trip planning and inventory management application designed to make packing for your adventures stress-free. Whether you're planning a weekend getaway or a long-term expedition, PackWise helps you stay organized, track your gear, and ensure you never forget the essentials.
+PackMate is a comprehensive trip planning and inventory management application designed to make packing for your adventures stress-free. Whether you're planning a weekend getaway or a long-term expedition, PackMate helps you stay organized, track your gear, and ensure you never forget the essentials.
 
 ## Key Features
 
