@@ -495,13 +495,13 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 dark:text-stone-100">
       <TripHeader trip={trip} daysUntil={daysUntil} />
 
       <div className="flex items-center justify-between mb-4 gap-2">
         <button 
           onClick={onBack}
-          className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors text-stone-700"
+          className="w-10 h-10 rounded-full bg-stone-100 dark:bg-stone-800 flex items-center justify-center hover:bg-stone-200 dark:hover:bg-stone-700 transition-colors text-stone-700 dark:text-stone-300"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -528,13 +528,13 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
       </div>
 
       {isSharedTrip && (
-        <div className="flex overflow-x-auto no-scrollbar gap-2 mb-6 bg-stone-100 p-1.5 rounded-2xl w-full">
+        <div className="flex overflow-x-auto no-scrollbar gap-2 mb-6 bg-stone-100 dark:bg-stone-800 p-1.5 rounded-2xl w-full">
           <button
             onClick={() => setActiveParticipantTab('all')}
             className={`px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap ${
               activeParticipantTab === 'all'
-                ? 'bg-white text-stone-900 shadow-sm'
-                : 'text-stone-500 hover:text-stone-700'
+                ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-sm'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'
             }`}
           >
             {t('common.all')}
@@ -543,8 +543,8 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
             onClick={() => setActiveParticipantTab('shared')}
             className={`px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5 ${
               activeParticipantTab === 'shared'
-                ? 'bg-white text-emerald-600 shadow-sm'
-                : 'text-stone-500 hover:text-stone-700'
+                ? 'bg-white dark:bg-stone-700 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'
             }`}
           >
             <Users className="w-4 h-4" />
@@ -559,14 +559,14 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                 onClick={() => setActiveParticipantTab(uid)}
                 className={`px-3 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap flex items-center gap-1.5 ${
                   activeParticipantTab === uid
-                    ? 'bg-white text-stone-900 shadow-sm'
-                    : 'text-stone-500 hover:text-stone-700'
+                    ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-sm'
+                    : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'
                 }`}
               >
                 {participantProfiles[uid]?.avatarUrl ? (
                   <img src={participantProfiles[uid].avatarUrl} alt={name} className="w-5 h-5 rounded-full" />
                 ) : (
-                  <div className="w-5 h-5 rounded-full bg-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-500">
+                  <div className="w-5 h-5 rounded-full bg-stone-200 dark:bg-stone-600 flex items-center justify-center text-[10px] font-bold text-stone-500 dark:text-stone-300">
                     {name.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -577,39 +577,39 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
         </div>
       )}
 
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 mb-4">
+      <div className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <span className="font-medium text-stone-700">{t('trips.packingProgress')}</span>
-          <span className="font-bold text-emerald-600">{progress}%</span>
+          <span className="font-medium text-stone-700 dark:text-stone-300">{t('trips.packingProgress')}</span>
+          <span className="font-bold text-emerald-600 dark:text-emerald-400">{progress}%</span>
         </div>
-        <div className="h-2.5 bg-stone-100 rounded-full overflow-hidden w-full">
+        <div className="h-2.5 bg-stone-100 dark:bg-stone-900 rounded-full overflow-hidden w-full">
           <div 
-            className="h-full bg-emerald-500 transition-all duration-500 ease-out rounded-full"
+            className="h-full bg-emerald-500 dark:bg-emerald-600 transition-all duration-500 ease-out rounded-full"
             style={{ width: `${progress}%` }}
           />
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-4">
-          <div className="flex bg-stone-100 p-1 rounded-xl w-fit">
+          <div className="flex bg-stone-100 dark:bg-stone-900 p-1 rounded-xl w-fit">
             <button
               onClick={() => setPackingFilter('all')}
-              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${packingFilter === 'all' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${packingFilter === 'all' ? 'bg-white dark:bg-stone-700 text-stone-900 dark:text-stone-100 shadow-sm' : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'}`}
             >
               {t('common.all')}
             </button>
             <button
               onClick={() => setPackingFilter('pending')}
-              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${packingFilter === 'pending' ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${packingFilter === 'pending' ? 'bg-white dark:bg-stone-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'}`}
             >
               {t('trips.filterPending')}
             </button>
             <button
               onClick={() => setPackingFilter('packed')}
-              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${packingFilter === 'packed' ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
+              className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${packingFilter === 'packed' ? 'bg-white dark:bg-stone-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'}`}
             >
               {t('trips.filterPacked')}
             </button>
           </div>
-          <p className="text-sm text-stone-500">{t('trips.packedCount', { packed: packedCount, total: totalCount })}</p>
+          <p className="text-sm text-stone-500 dark:text-stone-400">{t('trips.packedCount', { packed: packedCount, total: totalCount })}</p>
         </div>
         <div className="mt-6 flex gap-3">
           <button
@@ -622,7 +622,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
           {totalCount > 0 && (
             <button
               onClick={() => setIsClearModalOpen(true)}
-              className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-600 font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-2.5 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-600 dark:text-stone-300 font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
               title={t('trips.clearAll')}
             >
               <Trash2 className="w-5 h-5" />
@@ -642,26 +642,26 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
           const isAllPacked = catPackedCount === items.length && items.length > 0;
 
           return (
-            <div key={category} className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+            <div key={category} className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden">
               <button
                 onClick={() => toggleCategory(category)}
-                className="w-full px-6 py-4 flex items-center justify-between bg-white hover:bg-stone-50 transition-colors"
+                className="w-full px-6 py-4 flex items-center justify-between bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <h3 className="font-semibold text-lg">{t(`category.${category}`)}</h3>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${isAllPacked ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-600'}`}>
+                  <h3 className="font-semibold text-lg text-stone-900 dark:text-stone-100">{t(`category.${category}`)}</h3>
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${isAllPacked ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-400'}`}>
                     {catPackedCount} / {items.length}
                   </span>
                 </div>
                 {isExpanded ? (
-                  <ChevronUp className="w-5 h-5 text-stone-400" />
+                  <ChevronUp className="w-5 h-5 text-stone-400 dark:text-stone-500" />
                 ) : (
-                  <ChevronDown className="w-5 h-5 text-stone-400" />
+                  <ChevronDown className="w-5 h-5 text-stone-400 dark:text-stone-500" />
                 )}
               </button>
               
               {isExpanded && (
-                <div className="border-t border-stone-100 px-2 py-2">
+                <div className="border-t border-stone-100 dark:border-stone-700 px-2 py-2">
                   {activeParticipantTab === 'all' && isSharedTrip ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-2">
                       {trip.participants?.map(uid => {
@@ -672,16 +672,16 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                         const name = uid === user?.uid ? t('trips.mine', 'Mine') : profile?.name || t('auth.traveler');
                         
                         return (
-                          <div key={uid} className="bg-stone-50 rounded-xl p-3 border border-stone-100">
-                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-stone-200">
+                          <div key={uid} className="bg-stone-50 dark:bg-stone-900 rounded-xl p-3 border border-stone-100 dark:border-stone-700">
+                            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-stone-200 dark:border-stone-700">
                               {profile?.avatarUrl ? (
                                 <img src={profile.avatarUrl} alt={name} className="w-5 h-5 rounded-full" />
                               ) : (
-                                <div className="w-5 h-5 rounded-full bg-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-500">
+                                <div className="w-5 h-5 rounded-full bg-stone-200 dark:bg-stone-600 flex items-center justify-center text-[10px] font-bold text-stone-500 dark:text-stone-300">
                                   {name.charAt(0).toUpperCase()}
                                 </div>
                               )}
-                              <span className="font-medium text-sm text-stone-700">{name}</span>
+                              <span className="font-medium text-sm text-stone-700 dark:text-stone-300">{name}</span>
                             </div>
                             <div className="space-y-1">
                               {participantItems.map(item => {
@@ -693,21 +693,21 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                                       disabled={!isItemOwner}
                                       className={`flex-1 flex items-center gap-2 py-1.5 text-left ${!isItemOwner ? 'cursor-default' : ''}`}
                                     >
-                                      <div className={`flex-shrink-0 transition-colors ${item.isPacked ? 'text-emerald-500' : (isItemOwner ? 'text-stone-300 group-hover:text-stone-400' : 'text-stone-200')}`}>
+                                      <div className={`flex-shrink-0 transition-colors ${item.isPacked ? 'text-emerald-500 dark:text-emerald-400' : (isItemOwner ? 'text-stone-300 dark:text-stone-600 group-hover:text-stone-400' : 'text-stone-200 dark:text-stone-700')}`}>
                                         {item.isPacked ? (
                                           <CheckCircle2 className="w-4 h-4" />
                                         ) : (
                                           <Circle className="w-4 h-4" />
                                         )}
                                       </div>
-                                      <span className={`text-sm transition-all ${item.isPacked ? 'text-stone-400 line-through' : 'text-stone-700'}`}>
+                                      <span className={`text-sm transition-all ${item.isPacked ? 'text-stone-400 dark:text-stone-500 line-through' : 'text-stone-700 dark:text-stone-300'}`}>
                                         {t(`item.${item.name}`, item.name)}
                                         {item.quantity && item.quantity > 1 && (
-                                          <span className="ml-1 text-xs text-stone-400 font-normal">x{item.quantity}</span>
+                                          <span className="ml-1 text-xs text-stone-400 dark:text-stone-500 font-normal">x{item.quantity}</span>
                                         )}
                                       </span>
                                       {item.isShared && (
-                                        <span className="flex items-center gap-1 px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[9px] font-medium ml-auto">
+                                        <span className="flex items-center gap-1 px-1 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[9px] font-medium ml-auto">
                                           <Users className="w-3 h-3" />
                                         </span>
                                       )}
@@ -727,14 +727,14 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                       const itemOwnerProfile = item.ownerId ? participantProfiles[item.ownerId] : null;
 
                       return (
-                      <div key={item.id} className="flex flex-col hover:bg-stone-50 rounded-xl transition-colors group border-b border-stone-50 last:border-0">
+                      <div key={item.id} className="flex flex-col hover:bg-stone-50 dark:hover:bg-stone-700 rounded-xl transition-colors group border-b border-stone-50 dark:border-stone-700 last:border-0">
                         <div className="flex items-center justify-between">
                           <button
                             onClick={() => isItemOwner && toggleItemPacked(item.id)}
                             disabled={!isItemOwner}
                             className={`flex-1 flex items-center gap-4 px-4 py-3 text-left ${!isItemOwner ? 'cursor-default' : ''}`}
                           >
-                            <div className={`flex-shrink-0 transition-colors ${item.isPacked ? 'text-emerald-500' : (isItemOwner ? 'text-stone-300 group-hover:text-stone-400' : 'text-stone-200')}`}>
+                            <div className={`flex-shrink-0 transition-colors ${item.isPacked ? 'text-emerald-500 dark:text-emerald-400' : (isItemOwner ? 'text-stone-300 dark:text-stone-600 group-hover:text-stone-400' : 'text-stone-200 dark:text-stone-700')}`}>
                               {item.isPacked ? (
                                 <CheckCircle2 className="w-6 h-6" />
                               ) : (
@@ -742,13 +742,13 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                               )}
                             </div>
                             <div className="flex-1 flex items-center gap-2">
-                              <span className={`text-base transition-all ${item.isPacked ? 'text-stone-400 line-through' : 'text-stone-700'}`}>
+                              <span className={`text-base transition-all ${item.isPacked ? 'text-stone-400 dark:text-stone-500 line-through' : 'text-stone-700 dark:text-stone-300'}`}>
                                 {t(`item.${item.name}`, item.name)}
                                 {item.quantity && item.quantity > 1 && (
-                                  <span className="ml-2 text-sm text-stone-400 font-normal">x{item.quantity}</span>
+                                  <span className="ml-2 text-sm text-stone-400 dark:text-stone-500 font-normal">x{item.quantity}</span>
                                 )}
                                 {(item.cameraType || item.lensDetails || item.cableType || item.gamingConsoleType || item.medicineName) && (
-                                  <div className="text-xs text-stone-400 mt-0.5 font-normal flex flex-wrap gap-x-2">
+                                  <div className="text-xs text-stone-400 dark:text-stone-500 mt-0.5 font-normal flex flex-wrap gap-x-2">
                                     {item.cameraType && <span>• {item.cameraType}</span>}
                                     {item.lensDetails && <span>• {item.lensDetails}</span>}
                                     {item.cableType && <span>• {item.cableType}</span>}
@@ -771,13 +771,13 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                                       toggleItemShared(item.id);
                                     }
                                   }}
-                                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium cursor-pointer ${item.isShared ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-500'}`}
+                                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium cursor-pointer ${item.isShared ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400'}`}
                                 >
                                   <Users className="w-3 h-3" />
                                   {item.isShared ? t('trips.shared', 'Shared') : t('trips.private', 'Private')}
                                 </div>
                               ) : item.isShared && (
-                                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-medium">
+                                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-medium">
                                   <Users className="w-3 h-3" />
                                 </span>
                               ))}
@@ -786,7 +786,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                                   {itemOwnerProfile.avatarUrl ? (
                                     <img src={itemOwnerProfile.avatarUrl} alt={itemOwnerProfile.name} className="w-5 h-5 rounded-full opacity-80" />
                                   ) : (
-                                    <div className="w-5 h-5 rounded-full bg-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-500 opacity-80">
+                                    <div className="w-5 h-5 rounded-full bg-stone-200 dark:bg-stone-600 flex items-center justify-center text-[10px] font-bold text-stone-500 dark:text-stone-300 opacity-80">
                                       {itemOwnerProfile.name.charAt(0).toUpperCase()}
                                     </div>
                                   )}
@@ -893,54 +893,54 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
           <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsAddModalOpen(false)} />
-          <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
-            <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between bg-white">
-              <h3 className="text-xl font-semibold">{t('trips.addItemsToTrip')}</h3>
+          <div className="relative bg-white dark:bg-stone-800 rounded-3xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-5 border-b border-stone-100 dark:border-stone-700 flex items-center justify-between bg-white dark:bg-stone-800">
+              <h3 className="text-xl font-semibold dark:text-white">{t('trips.addItemsToTrip')}</h3>
               <button 
                 onClick={() => {
                   setIsAddModalOpen(false);
                   setSearchQuery('');
                 }}
-                className="text-stone-400 hover:text-stone-600 font-medium text-sm px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+                className="text-stone-400 dark:text-stone-300 hover:text-stone-600 dark:hover:text-stone-100 font-medium text-sm px-3 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
               >
                 {t('common.done')}
               </button>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-4 bg-stone-50 border-b border-stone-100">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-4 bg-stone-50 dark:bg-stone-900 border-b border-stone-100 dark:border-stone-700">
               <button
                 onClick={() => setAddTab('mustBring')}
-                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'mustBring' ? 'bg-amber-100 text-amber-700' : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'mustBring' ? 'bg-amber-100 text-amber-700' : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'}`}
               >
                 <ShieldCheck className="w-4 h-4" /> {t('inventory.mustBring')}
               </button>
               <button
                 onClick={() => setAddTab('gear')}
-                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'gear' ? 'bg-emerald-100 text-emerald-700' : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'gear' ? 'bg-emerald-100 text-emerald-700' : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'}`}
               >
                 <Box className="w-4 h-4" /> {t('inventory.gear')}
               </button>
               <button
                 onClick={() => setAddTab('suggested')}
-                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'suggested' ? 'bg-emerald-100 text-emerald-700' : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'suggested' ? 'bg-emerald-100 text-emerald-700' : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'}`}
               >
                 <Sparkles className="w-4 h-4" /> {t('trips.tabSuggested')}
               </button>
               <button
                 onClick={() => setAddTab('lists')}
-                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'lists' ? 'bg-emerald-100 text-emerald-700' : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'lists' ? 'bg-emerald-100 text-emerald-700' : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'}`}
               >
                 <ListIcon className="w-4 h-4" /> {t('inventory.lists')}
               </button>
               <button
                 onClick={() => setAddTab('custom')}
-                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'custom' ? 'bg-emerald-100 text-emerald-700' : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'custom' ? 'bg-emerald-100 text-emerald-700' : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'}`}
               >
                 <PenLine className="w-4 h-4" /> {t('trips.tabCustom')}
               </button>
               <button
                 onClick={() => setAddTab('search')}
-                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'search' ? 'bg-emerald-100 text-emerald-700' : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-100'}`}
+                className={`px-4 py-3 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 ${addTab === 'search' ? 'bg-emerald-100 text-emerald-700' : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'}`}
               >
                 <Search className="w-4 h-4" /> {t('common.search', 'Search')}
               </button>
@@ -988,14 +988,14 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                               style={{ height: '100%' }}
                               data={searchResults}
                               itemContent={(index, item) => (
-                                <div className="flex items-center justify-between p-4 mb-2 rounded-xl border border-stone-200 bg-white hover:border-emerald-500/30 hover:shadow-md transition-all group">
+                                <div className="flex items-center justify-between p-4 mb-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 hover:border-emerald-500/30 hover:shadow-md transition-all group">
                                   <div>
-                                    <p className="font-medium text-stone-900">{t(`item.${item.name}`, item.name)}</p>
-                                    <p className="text-xs text-stone-500 mt-0.5">{t(`category.${item.category}`)}</p>
+                                    <p className="font-medium text-stone-900 dark:text-white">{t(`item.${item.name}`, item.name)}</p>
+                                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">{t(`category.${item.category}`)}</p>
                                   </div>
                                   <button
                                     onClick={() => addItemToTrip(item.name, item.category, false)}
-                                    className="w-8 h-8 rounded-full bg-stone-100 text-stone-600 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-colors shadow-sm"
+                                    className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-colors shadow-sm"
                                   >
                                     <Plus className="w-4 h-4" />
                                   </button>
@@ -1206,25 +1206,25 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
 
                   {/* User Custom Lists */}
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-stone-900 mb-1">
-                      <ListIcon className="w-4 h-4 text-stone-400" />
+                    <div className="flex items-center gap-2 text-stone-900 dark:text-stone-100 mb-1">
+                      <ListIcon className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                       <h4 className="text-sm font-bold uppercase tracking-wider">{t('inventory.customLists')}</h4>
                     </div>
                     {customLists.length === 0 ? (
-                      <p className="text-center text-stone-500 py-8 bg-stone-50 rounded-xl border border-stone-200 border-dashed">
+                      <p className="text-center text-stone-500 dark:text-stone-400 py-8 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 border-dashed">
                         {t('trips.listsEmpty')}
                       </p>
                     ) : (
                       <div className="grid grid-cols-1 gap-3">
                         {customLists.map(list => (
-                          <div key={list.id} className="rounded-xl border border-stone-200 overflow-hidden">
+                          <div key={list.id} className="rounded-xl border border-stone-200 dark:border-stone-700 overflow-hidden">
                             <div 
-                              className="flex items-center justify-between p-4 bg-stone-50 hover:bg-stone-100 transition-colors cursor-pointer"
+                              className="flex items-center justify-between p-4 bg-stone-50 dark:bg-stone-900 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
                               onClick={() => setExpandedListId(expandedListId === list.id ? null : list.id)}
                             >
                               <div>
-                                <p className="font-medium text-stone-900">{list.name}</p>
-                                <p className="text-xs text-stone-500 mt-0.5">{list.items.length} {t('common.items')}</p>
+                                <p className="font-medium text-stone-900 dark:text-stone-100">{list.name}</p>
+                                <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">{list.items.length} {t('common.items')}</p>
                               </div>
                               <div className="flex items-center gap-3">
                                 <button
@@ -1232,31 +1232,31 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                                     e.stopPropagation();
                                     addItemsToTrip(list.items);
                                   }}
-                                  className="text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition-colors"
+                                  className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 px-3 py-1.5 rounded-lg transition-colors"
                                 >
                                   {t('trips.addAll')}
                                 </button>
                                 {expandedListId === list.id ? (
-                                  <ChevronUp className="w-5 h-5 text-stone-400" />
+                                  <ChevronUp className="w-5 h-5 text-stone-400 dark:text-stone-500" />
                                 ) : (
-                                  <ChevronDown className="w-5 h-5 text-stone-400" />
+                                  <ChevronDown className="w-5 h-5 text-stone-400 dark:text-stone-500" />
                                 )}
                               </div>
                             </div>
                             {expandedListId === list.id && (
-                              <div className="divide-y divide-stone-100 border-t border-stone-200 bg-white">
+                              <div className="divide-y divide-stone-100 dark:divide-stone-700 border-t border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800">
                                 {list.items.length === 0 ? (
-                                  <p className="text-center text-stone-500 py-4 text-sm">{t('trips.listEmpty')}</p>
+                                  <p className="text-center text-stone-500 dark:text-stone-400 py-4 text-sm">{t('trips.listEmpty')}</p>
                                 ) : (
                                   list.items.map((item, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 px-4 hover:bg-stone-50 transition-colors">
+                                    <div key={idx} className="flex items-center justify-between p-3 px-4 hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors">
                                       <div>
-                                        <p className="font-medium text-stone-900 text-sm">{t(`item.${item.name}`, item.name)}</p>
-                                        <p className="text-xs text-stone-500">{t(`category.${item.category}`)}</p>
+                                        <p className="font-medium text-stone-900 dark:text-stone-100 text-sm">{t(`item.${item.name}`, item.name)}</p>
+                                        <p className="text-xs text-stone-500 dark:text-stone-400">{t(`category.${item.category}`)}</p>
                                       </div>
                                       <button
                                         onClick={() => addItemToTrip(item.name, item.category)}
-                                        className="w-7 h-7 rounded-full bg-stone-100 text-stone-600 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-colors"
+                                        className="w-7 h-7 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-colors"
                                       >
                                         <Plus className="w-3.5 h-3.5" />
                                       </button>
@@ -1276,22 +1276,22 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
               {addTab === 'custom' && (
                 <form onSubmit={handleAddCustom} className="space-y-4 max-w-md mx-auto py-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-stone-700">{t('inventory.itemName')}</label>
+                    <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('inventory.itemName')}</label>
                     <input
                       type="text"
                       value={customName}
                       onChange={(e) => setCustomName(e.target.value)}
                       placeholder="e.g., Camera Charger"
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-stone-700">{t('inventory.category')}</label>
+                    <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('inventory.category')}</label>
                     <select
                       value={customCategory}
                       onChange={(e) => setCustomCategory(e.target.value as Category)}
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                     >
                       {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c}`)}</option>)}
                     </select>
@@ -1312,15 +1312,15 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
       {/* Edit Trip Modal */}
       {isEditingTrip && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
-            <div className="p-6 border-b border-stone-100 flex items-center justify-between bg-white sticky top-0 z-10">
-              <h3 className="text-xl font-bold flex items-center gap-2">
+          <div className="bg-white dark:bg-stone-800 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <div className="p-6 border-b border-stone-100 dark:border-stone-700 flex items-center justify-between bg-white dark:bg-stone-800 sticky top-0 z-10">
+              <h3 className="text-xl font-bold flex items-center gap-2 dark:text-white">
                 <Edit3 className="w-5 h-5 text-emerald-500" />
                 {t('trips.editDetails')}
               </h3>
               <button 
                 onClick={() => setIsEditingTrip(false)}
-                className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center hover:bg-stone-200 transition-colors"
+                className="w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-700 flex items-center justify-center hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors text-stone-600 dark:text-stone-300"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1328,20 +1328,20 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
             <div className="p-6 overflow-y-auto">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-stone-700">{t('trips.coverImage')}</label>
+                  <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('trips.coverImage')}</label>
                   <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-xl overflow-hidden bg-stone-100 border border-stone-200 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 flex items-center justify-center">
                       {editTripImageUrl ? (
                         <img src={editTripImageUrl} alt="Cover" className="w-full h-full object-cover" />
                       ) : (
-                        <ImageIcon className="w-8 h-8 text-stone-400" />
+                        <ImageIcon className="w-8 h-8 text-stone-400 dark:text-stone-500" />
                       )}
                     </div>
                     <div className="flex flex-col gap-2">
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl text-sm transition-colors"
+                        className="px-4 py-2 bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-300 font-medium rounded-xl text-sm transition-colors"
                       >
                         {t('trips.changeBackground')}
                       </button>
@@ -1349,7 +1349,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                         <button
                           type="button"
                           onClick={() => setEditTripImageUrl(undefined)}
-                          className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl text-sm transition-colors"
+                          className="px-4 py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-medium rounded-xl text-sm transition-colors"
                         >
                           {t('common.remove')}
                         </button>
@@ -1365,38 +1365,38 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-stone-700">{t('trips.destination')}</label>
+                  <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('trips.destination')}</label>
                   <input
                     type="text"
                     value={editTripName}
                     onChange={(e) => setEditTripName(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                     required
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
-                      <MapIcon className="w-4 h-4 text-stone-400" />
+                    <label className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2">
+                      <MapIcon className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                       {t('trips.tripType')}
                     </label>
                     <select
                       value={TRIP_TYPES.includes(editTripType) ? editTripType : 'Other'}
                       onChange={(e) => setEditTripType(e.target.value)}
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                     >
                       {TRIP_TYPES.map(type => <option key={type} value={type}>{t(`type.${type}`, type)}</option>)}
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
-                      <Car className="w-4 h-4 text-stone-400" />
+                    <label className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2">
+                      <Car className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                       {t('trips.transportation')}
                     </label>
                     <select
                       value={editTripTransportation}
                       onChange={(e) => setEditTripTransportation(e.target.value)}
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                     >
                       {TRANSPORTATION_TYPES.map(type => <option key={type} value={type}>{t(`transport.${type}`, type)}</option>)}
                     </select>
@@ -1406,19 +1406,19 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {editTripType === 'Other' && (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-stone-700">{t('trips.customType')}</label>
+                      <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('trips.customType')}</label>
                       <input
                         type="text"
                         value={editTripCustomType}
                         onChange={(e) => setEditTripCustomType(e.target.value)}
                         placeholder="e.g., Photography Trip"
-                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                        className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                       />
                     </div>
                   )}
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-stone-400" />
+                    <label className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                       {t('trips.dates')}
                     </label>
                     <DatePicker
@@ -1429,7 +1429,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                         setEditDateRange(update as [Date | null, Date | null]);
                       }}
                       placeholderText={t('trips.selectDates')}
-                      className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                      className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                       wrapperClassName="w-full"
                       dateFormat="yyyy-MM-dd"
                       required
@@ -1437,9 +1437,9 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-stone-100">
+                <div className="pt-4 border-t border-stone-100 dark:border-stone-700">
                   <div className="space-y-4">
-                    <label className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                    <label className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                       <Users className="w-4 h-4 text-emerald-500" />
                       {t('trips.invitees', 'Invitees')}
                     </label>
@@ -1447,15 +1447,15 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                       {trip.participants?.filter(uid => uid !== trip.uid).map(uid => {
                         const profile = trip.participantProfiles?.[uid];
                         return (
-                          <div key={uid} className="flex items-center justify-between px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl max-w-sm">
-                            <span className="text-lg text-stone-700 font-medium">{profile?.name || t('auth.traveler')}</span>
+                          <div key={uid} className="flex items-center justify-between px-4 py-2.5 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl max-w-sm">
+                            <span className="text-lg text-stone-700 dark:text-stone-300 font-medium">{profile?.name || t('auth.traveler')}</span>
                             {isOwner && (
                               <button
                                 onClick={() => {
                                   setRemoveInviteeId(uid);
                                   setIsRemoveInviteeModalOpen(true);
                                 }}
-                                className="text-red-500 hover:text-red-600 text-sm font-medium"
+                                className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 text-sm font-medium"
                               >
                                 {t('common.remove', 'Remove')}
                               </button>
@@ -1466,15 +1466,15 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <label className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                    <label className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-emerald-500" />
-                      {t('trips.applyPreset')}
+                      {t('trips.applyPreset', 'Apply Preset Template')}
                     </label>
                     <div className="flex gap-3">
                       <select
                         value={selectedPresetKey}
                         onChange={(e) => setSelectedPresetKey(e.target.value)}
-                        className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                        className="flex-1 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                       >
                         <option value="">{t('trips.selectTemplate', 'Select a template...')}</option>
                         {presetLists.map(([key]) => (
@@ -1485,7 +1485,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                         type="button"
                         disabled={!selectedPresetKey}
                         onClick={() => setIsApplyPresetModalOpen(true)}
-                        className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-stone-200 disabled:text-stone-400 text-white font-medium rounded-xl transition-all shadow-sm flex items-center gap-2"
+                        className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-stone-200 dark:disabled:bg-stone-700 disabled:text-stone-400 dark:disabled:text-stone-500 text-white font-medium rounded-xl transition-all shadow-sm flex items-center gap-2"
                       >
                         <Save className="w-4 h-4" />
                         {t('inventory.add')}
@@ -1495,7 +1495,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                 </div>
               </div>
             </div>
-            <div className="p-6 border-t border-stone-100 bg-stone-50 flex justify-between gap-3">
+            <div className="p-6 border-t border-stone-100 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 flex justify-between gap-3">
               <button
                 onClick={() => {
                   if (isOwner) {
@@ -1504,7 +1504,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                     setIsLeaveTripModalOpen(true);
                   }
                 }}
-                className="px-4 py-2.5 text-red-600 font-medium hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2"
+                className="px-4 py-2.5 text-red-600 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors flex items-center gap-2"
               >
                 {isOwner ? (
                   <>
@@ -1521,13 +1521,13 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
               <div className="flex gap-3">
                 <button
                   onClick={() => setIsEditingTrip(false)}
-                  className="px-4 py-2.5 text-stone-600 font-medium hover:bg-stone-200 rounded-xl transition-colors"
+                  className="px-4 py-2.5 text-stone-600 dark:text-stone-400 font-medium hover:bg-stone-200 dark:hover:bg-stone-700 rounded-xl transition-colors"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleSaveTrip}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-4 py-2.5 flex items-center gap-2 transition-colors"
+                  className="bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white font-medium rounded-xl px-4 py-2.5 flex items-center gap-2 transition-colors"
                 >
                   <Save className="w-4 h-4" />
                   {t('trips.saveChanges')}
@@ -1539,21 +1539,21 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
       )}
       {pendingItem && (
         <div className="fixed inset-0 bg-stone-900/50 flex items-center justify-center z-[70] p-4">
-          <div className="bg-white p-6 rounded-2xl max-w-sm w-full shadow-xl animate-in fade-in zoom-in duration-200">
-            <h3 className="text-lg font-bold text-stone-900 mb-4">
+          <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl max-w-sm w-full shadow-xl animate-in fade-in zoom-in duration-200">
+            <h3 className="text-lg font-bold text-stone-900 dark:text-white mb-4">
               {t(`item.${pendingItem.name}`, pendingItem.name)} {t('common.details')}
             </h3>
             
             <div className="space-y-4">
               {pendingItem.name.toLowerCase() === 'camera' && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
                     {t('common.type')}
                   </label>
                   <select
                     value={cameraType}
                     onChange={(e) => setCameraType(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
                   >
                     <option value="Mirrorless">{t('item.camera.mirrorless')}</option>
                     <option value="DSLR">{t('item.camera.dslr')}</option>
@@ -1567,7 +1567,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                       value={otherCameraType}
                       onChange={(e) => setOtherCameraType(e.target.value)}
                       placeholder={t('common.specify')}
-                      className="w-full mt-2 px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
+                      className="w-full mt-2 px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
                       autoFocus
                     />
                   )}
@@ -1576,7 +1576,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
 
               {pendingItem.name.toLowerCase() === 'other medicine' && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
                     {t('common.details')}
                   </label>
                   <input
@@ -1592,7 +1592,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
 
               {pendingItem.name.toLowerCase() === 'camera lens' && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
                     {t('common.details')}
                   </label>
                   <input
@@ -1608,13 +1608,13 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
 
               {pendingItem.name.toLowerCase() === 'data cable' && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
                     {t('common.type')}
                   </label>
                   <select
                     value={cableType}
                     onChange={(e) => setCableType(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
                   >
                     <option value="USB-C">{t('item.cable.usbC')}</option>
                     <option value="Lightning">{t('item.cable.lightning')}</option>
@@ -1627,7 +1627,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                       value={otherCableType}
                       onChange={(e) => setOtherCableType(e.target.value)}
                       placeholder={t('common.specify')}
-                      className="w-full mt-2 px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
+                      className="w-full mt-2 px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
                       autoFocus
                     />
                   )}
@@ -1636,13 +1636,13 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
 
               {pendingItem.name.toLowerCase() === 'gaming console' && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
                     {t('common.type')}
                   </label>
                   <select
                     value={gamingConsoleType}
                     onChange={(e) => setGamingConsoleType(e.target.value)}
-                    className="w-full px-4 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
+                    className="w-full px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all outline-none"
                   >
                     <option value="Nintendo Switch">{t('item.gaming.switch')}</option>
                     <option value="PS Portal">{t('item.gaming.psPortal')}</option>
@@ -1665,7 +1665,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setPendingItem(null)}
-                className="flex-1 px-4 py-2 border border-stone-200 text-stone-600 font-medium rounded-xl hover:bg-stone-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 font-medium rounded-xl hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors"
               >
                 {t('common.cancel')}
               </button>
@@ -1715,26 +1715,26 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
       {isInviteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
           <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsInviteModalOpen(false)} />
-          <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-md flex flex-col overflow-hidden">
-            <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between bg-white">
-              <h3 className="text-xl font-semibold">{t('trips.inviteCollaborator', 'Invite Collaborator')}</h3>
+          <div className="relative bg-white dark:bg-stone-800 rounded-3xl shadow-xl w-full max-w-md flex flex-col overflow-hidden">
+            <div className="px-6 py-5 border-b border-stone-100 dark:border-stone-700 flex items-center justify-between bg-white dark:bg-stone-800">
+              <h3 className="text-xl font-semibold dark:text-white">{t('trips.inviteCollaborator', 'Invite Collaborator')}</h3>
               <button 
                 onClick={() => setIsInviteModalOpen(false)}
-                className="text-stone-400 hover:text-stone-600 font-medium text-sm px-3 py-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+                className="text-stone-400 dark:text-stone-300 hover:text-stone-600 dark:hover:text-stone-100 font-medium text-sm px-3 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
               >
                 {t('common.done')}
               </button>
             </div>
             <div className="p-6">
-              <p className="text-stone-500 mb-4 text-sm">
+              <p className="text-stone-500 dark:text-stone-400 mb-4 text-sm">
                 {t('trips.inviteDescription', 'Share this 6-digit code to invite someone to pack with you. They will be able to add and manage their own items.')}
               </p>
               
               <div className="mb-6">
                 {trip.inviteToken ? (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-center gap-4 p-6 bg-stone-50 rounded-xl border border-stone-200">
-                      <span className="text-4xl font-mono font-bold tracking-[0.2em] text-stone-800">
+                    <div className="flex items-center justify-center gap-4 p-6 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700">
+                      <span className="text-4xl font-mono font-bold tracking-[0.2em] text-stone-800 dark:text-stone-100">
                         {trip.inviteToken}
                       </span>
                       <button 
@@ -1742,7 +1742,7 @@ export default function TripDetailView({ trip, inventory, profile, user, customL
                           navigator.clipboard.writeText(trip.inviteToken!);
                           setIsCopiedModalOpen(true);
                         }}
-                        className="p-2 text-stone-400 hover:text-emerald-600 transition-colors rounded-lg hover:bg-stone-100"
+                        className="p-2 text-stone-400 dark:text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors rounded-lg hover:bg-stone-100 dark:hover:bg-stone-700"
                         title={t('common.copy', 'Copy')}
                       >
                         <Copy className="w-5 h-5" />

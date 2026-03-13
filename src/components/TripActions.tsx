@@ -26,7 +26,7 @@ export const TripActions: React.FC<TripActionsProps> = ({
       {isOwner && (
         <button
           onClick={onInvite}
-          className="w-10 h-10 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-medium rounded-xl transition-colors flex items-center justify-center"
+          className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 font-medium rounded-xl transition-colors flex items-center justify-center"
           title={t('trips.invite', 'Invite')}
           aria-label={t('trips.invite', 'Invite')}
         >
@@ -36,7 +36,7 @@ export const TripActions: React.FC<TripActionsProps> = ({
       {isOwner && (
         <button
           onClick={onEdit}
-          className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl transition-colors flex items-center justify-center"
+          className="w-10 h-10 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-medium rounded-xl transition-colors flex items-center justify-center"
           title={t('common.edit')}
           aria-label={t('common.edit')}
         >
@@ -45,7 +45,7 @@ export const TripActions: React.FC<TripActionsProps> = ({
       )}
       <button
         onClick={onExport}
-        className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl transition-colors flex items-center justify-center"
+        className="w-10 h-10 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-medium rounded-xl transition-colors flex items-center justify-center"
         title={t('common.export')}
         aria-label={t('common.export')}
       >
@@ -53,7 +53,7 @@ export const TripActions: React.FC<TripActionsProps> = ({
       </button>
       <button
         onClick={isOwner ? onDelete : onLeave}
-        className="w-10 h-10 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl transition-colors flex items-center justify-center"
+        className="w-10 h-10 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-medium rounded-xl transition-colors flex items-center justify-center"
         title={isOwner ? t('common.delete') : t('trips.leave', 'Leave')}
         aria-label={isOwner ? t('common.delete') : t('trips.leave', 'Leave')}
       >

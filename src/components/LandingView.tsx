@@ -28,11 +28,11 @@ export default function LandingView({ profile, trips, onNavigate }: Props) {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Welcome Message */}
       <div className="space-y-1">
-        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 leading-tight">
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 dark:text-white leading-tight">
           {t('landing.welcomeBackPrefix')} <br />
           <span className="text-emerald-600">{profile?.name || t('auth.traveler')}</span>
         </h2>
-        <p className="text-stone-500 text-lg font-medium">
+        <p className="text-stone-500 dark:text-stone-400 text-lg font-medium">
           {t('landing.whereToNext')}
         </p>
       </div>
@@ -96,20 +96,20 @@ export default function LandingView({ profile, trips, onNavigate }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <button
           onClick={() => onNavigate('trips')}
-          className="group relative flex flex-col items-start p-8 bg-white rounded-3xl border border-stone-200 shadow-sm hover:shadow-xl hover:border-emerald-500/50 transition-all duration-300 text-left overflow-hidden"
+          className="group relative flex flex-col items-start p-8 bg-white dark:bg-stone-800 rounded-3xl border border-stone-200 dark:border-stone-700 shadow-sm hover:shadow-xl hover:border-emerald-500/50 transition-all duration-300 text-left overflow-hidden"
         >
-          <div className="absolute top-0 right-0 p-6 text-stone-100 group-hover:text-emerald-100 transition-colors">
+          <div className="absolute top-0 right-0 p-6 text-stone-100 dark:text-stone-700 group-hover:text-emerald-100 transition-colors">
             <Plane className="w-24 h-24 rotate-12" />
           </div>
           <div className="relative z-10 space-y-4">
-            <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl w-fit group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
+            <div className="p-3 bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 rounded-2xl w-fit group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
               <Plane className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-stone-900">{t('landing.myTripView')}</h3>
-              <p className="text-stone-500 mt-1">{t('landing.myTripViewDesc')}</p>
+              <h3 className="text-xl font-bold text-stone-900 dark:text-white">{t('landing.myTripView')}</h3>
+              <p className="text-stone-500 dark:text-stone-400 mt-1">{t('landing.myTripViewDesc')}</p>
             </div>
-            <div className="flex items-center gap-2 text-emerald-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-sm group-hover:translate-x-1 transition-transform">
               {t('landing.exploreTrips')}
               <ChevronRight className="w-4 h-4" />
             </div>
@@ -118,20 +118,20 @@ export default function LandingView({ profile, trips, onNavigate }: Props) {
 
         <button
           onClick={() => onNavigate('inventory')}
-          className="group relative flex flex-col items-start p-8 bg-white rounded-3xl border border-stone-200 shadow-sm hover:shadow-xl hover:border-blue-500/50 transition-all duration-300 text-left overflow-hidden"
+          className="group relative flex flex-col items-start p-8 bg-white dark:bg-stone-800 rounded-3xl border border-stone-200 dark:border-stone-700 shadow-sm hover:shadow-xl hover:border-blue-500/50 transition-all duration-300 text-left overflow-hidden"
         >
-          <div className="absolute top-0 right-0 p-6 text-stone-100 group-hover:text-blue-100 transition-colors">
+          <div className="absolute top-0 right-0 p-6 text-stone-100 dark:text-stone-700 group-hover:text-blue-100 transition-colors">
             <Box className="w-24 h-24 -rotate-12" />
           </div>
           <div className="relative z-10 space-y-4">
-            <div className="p-3 bg-blue-100 text-blue-600 rounded-2xl w-fit group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
+            <div className="p-3 bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 rounded-2xl w-fit group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
               <Box className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-stone-900">{t('landing.myInventory')}</h3>
-              <p className="text-stone-500 mt-1">{t('landing.myInventoryDesc')}</p>
+              <h3 className="text-xl font-bold text-stone-900 dark:text-white">{t('landing.myInventory')}</h3>
+              <p className="text-stone-500 dark:text-stone-400 mt-1">{t('landing.myInventoryDesc')}</p>
             </div>
-            <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm group-hover:translate-x-1 transition-transform">
+            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-semibold text-sm group-hover:translate-x-1 transition-transform">
               {t('landing.manageGear')}
               <ChevronRight className="w-4 h-4" />
             </div>

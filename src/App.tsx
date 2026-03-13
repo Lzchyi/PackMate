@@ -658,7 +658,7 @@ export default function App() {
           <div className="mt-8 pt-8 border-t border-stone-100 flex items-center justify-center gap-4 text-sm text-stone-400">
             <button onClick={() => i18n.changeLanguage('en-GB')} className={i18n.language === 'en-GB' ? 'text-stone-900 font-bold' : ''}>English (UK)</button>
             <span>•</span>
-            <button onClick={() => i18n.changeLanguage('zh-CN')} className={i18n.language === 'zh-CN' ? 'text-stone-900 font-bold' : ''}>简体中文</button>
+            <button onClick={() => i18n.changeLanguage('zh-CN')} className={i18n.language === 'zh-CN' ? 'text-stone-900 font-bold' : ''}>中文</button>
           </div>
         </div>
       </div>
@@ -666,24 +666,24 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 font-sans selection:bg-emerald-200 flex flex-col">
+    <div className="min-h-screen bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 font-sans selection:bg-emerald-200 flex flex-col">
       <Toaster position="top-center" />
-      <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
+      <header className="bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setActiveTab('landing'); setActiveTripId(null); }}>
             <div className="bg-emerald-500 text-white p-2 rounded-xl">
               <Luggage className="w-5 h-5" />
             </div>
-            <h1 className="text-xl font-semibold tracking-tight">{t('app.name')}</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-stone-900 dark:text-white">{t('app.name')}</h1>
           </div>
           
-          <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl">
+          <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-900 p-1 rounded-xl">
             <button
               onClick={() => { setActiveTab('trips'); setActiveTripId(null); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                 activeTab === 'trips' && !activeTripId
-                  ? 'bg-white text-stone-900 shadow-sm' 
-                  : 'text-stone-500 hover:text-stone-700'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-white shadow-sm' 
+                  : 'text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               <Plane className="w-4 h-4" />
@@ -693,8 +693,8 @@ export default function App() {
               onClick={() => { setActiveTab('inventory'); setActiveTripId(null); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                 activeTab === 'inventory' 
-                  ? 'bg-white text-stone-900 shadow-sm' 
-                  : 'text-stone-500 hover:text-stone-700'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-white shadow-sm' 
+                  : 'text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               <Box className="w-4 h-4" />
@@ -704,8 +704,8 @@ export default function App() {
               onClick={() => { setActiveTab('profile'); setActiveTripId(null); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                 activeTab === 'profile' 
-                  ? 'bg-white text-stone-900 shadow-sm' 
-                  : 'text-stone-500 hover:text-stone-700'
+                  ? 'bg-white dark:bg-stone-800 text-stone-900 dark:text-white shadow-sm' 
+                  : 'text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               <User className="w-4 h-4" />

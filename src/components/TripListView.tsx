@@ -258,8 +258,8 @@ export default function TripListView({ trips, inventory, profile, customLists, a
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold">{t('trips.title')}</h2>
-          <p className="text-stone-500 mt-1">{t('trips.tagline')}</p>
+          <h2 className="text-2xl font-semibold dark:text-white">{t('trips.title')}</h2>
+          <p className="text-stone-500 dark:text-stone-400 mt-1">{t('trips.tagline')}</p>
         </div>
         {!isCreating && !isJoining && (
           <div className="flex items-center gap-2">
@@ -272,7 +272,7 @@ export default function TripListView({ trips, inventory, profile, customLists, a
             />
             <button
               onClick={() => setIsImportStartModalOpen(true)}
-              className="bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors"
+              className="bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-medium rounded-xl px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors"
               title={t('trips.import')}
             >
               <Download className="w-5 h-5" />
@@ -280,7 +280,7 @@ export default function TripListView({ trips, inventory, profile, customLists, a
             </button>
             <button
               onClick={() => setIsJoining(true)}
-              className="bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors"
+              className="bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-medium rounded-xl px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors"
             >
               <Users className="w-5 h-5" />
               <span className="whitespace-nowrap">{t('trips.join', 'Join')}</span>
@@ -298,14 +298,14 @@ export default function TripListView({ trips, inventory, profile, customLists, a
 
       {trips.length > 0 && !isCreating && !isJoining && (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-          <h3 className="text-lg font-semibold">{t('inventory.filterAndSort')}</h3>
+          <h3 className="text-lg font-semibold dark:text-white">{t('inventory.filterAndSort')}</h3>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <div className="relative flex-1 sm:flex-none">
-              <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500" />
               <select 
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full sm:w-40 bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none"
+                className="w-full sm:w-40 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none dark:text-stone-200"
               >
                 {['All', 'Shared', ...TRIP_TYPES.filter(t => t !== 'Other')].sort().concat('Other').map(type => (
                   <option key={type} value={type}>
@@ -315,11 +315,11 @@ export default function TripListView({ trips, inventory, profile, customLists, a
               </select>
             </div>
             <div className="relative flex-1 sm:flex-none">
-              <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500" />
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="w-full sm:w-40 bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none"
+                className="w-full sm:w-40 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none dark:text-stone-200"
               >
                 <option value="newest">{t('trips.newest')}</option>
                 <option value="oldest">{t('trips.oldest')}</option>
@@ -332,33 +332,33 @@ export default function TripListView({ trips, inventory, profile, customLists, a
       )}
 
       {isJoining && (
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
-          <h3 className="text-lg font-semibold mb-6">{t('trips.join', 'Join Trip')}</h3>
+        <div className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 sm:p-8">
+          <h3 className="text-lg font-semibold mb-6 dark:text-white">{t('trips.join', 'Join Trip')}</h3>
           <form onSubmit={handleJoinSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-700">{t('trips.inviteCode', 'Invite Code')}</label>
+              <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('trips.inviteCode', 'Invite Code')}</label>
               <input
                 type="text"
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                 placeholder="e.g., X7B9QA"
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono tracking-widest uppercase"
+                className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono tracking-widest uppercase dark:text-stone-100"
                 required
                 maxLength={6}
               />
-              <p className="text-xs text-stone-500 mt-2">
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">
                 {t('trips.inviteCodeHelp', 'Enter the 6-digit code shared by the trip owner.')}
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100 dark:border-stone-700">
               <button
                 type="button"
                 onClick={() => {
                   setIsJoining(false);
                   setJoinCode('');
                 }}
-                className="px-4 py-2.5 text-stone-600 font-medium hover:bg-stone-100 rounded-xl transition-colors"
+                className="px-4 py-2.5 text-stone-600 dark:text-stone-400 font-medium hover:bg-stone-100 dark:hover:bg-stone-700 rounded-xl transition-colors"
               >
                 {t('common.cancel')}
               </button>
@@ -380,43 +380,43 @@ export default function TripListView({ trips, inventory, profile, customLists, a
       )}
 
       {isCreating && (
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
-          <h3 className="text-lg font-semibold mb-6">{t('trips.createTitle')}</h3>
+        <div className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 sm:p-8">
+          <h3 className="text-lg font-semibold mb-6 dark:text-white">{t('trips.createTitle')}</h3>
           <form onSubmit={handleCreateTrip} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-700">{t('trips.destination')}</label>
+              <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('trips.destination')}</label>
               <input
                 type="text"
                 value={newTripName}
                 onChange={(e) => setNewTripName(e.target.value)}
                 placeholder="e.g., Weekend in Paris"
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                 required
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
-                  <Map className="w-4 h-4 text-stone-400" />
+                <label className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2">
+                  <Map className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                   {t('trips.type')}
                 </label>
                 <select
                   value={newTripType}
                   onChange={(e) => setNewTripType(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                 >
                   {TRIP_TYPES.map(type => <option key={type} value={type}>{t(`type.${type}`, type)}</option>)}
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
-                  <Car className="w-4 h-4 text-stone-400" />
+                <label className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2">
+                  <Car className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                   {t('trips.transportation')}
                 </label>
                 <select
                   value={newTripTransportation}
                   onChange={(e) => setNewTripTransportation(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                 >
                   {TRANSPORTATION_TYPES.map(transport => <option key={transport} value={transport}>{t(`transport.${transport}`, transport)}</option>)}
                 </select>
@@ -426,19 +426,19 @@ export default function TripListView({ trips, inventory, profile, customLists, a
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {newTripType === 'Other' && (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-stone-700">{t('trips.customType')}</label>
+                  <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('trips.customType')}</label>
                   <input
                     type="text"
                     value={newTripCustomType}
                     onChange={(e) => setNewTripCustomType(e.target.value)}
                     placeholder="e.g., Photography Trip"
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                   />
                 </div>
               )}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-stone-400" />
+                <label className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                   {t('trips.dates')}
                 </label>
                 <DatePicker
@@ -449,18 +449,18 @@ export default function TripListView({ trips, inventory, profile, customLists, a
                     setDateRange(update as [Date | null, Date | null]);
                   }}
                   placeholderText={t('trips.selectDates')}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                   wrapperClassName="w-full"
                   dateFormat="yyyy-MM-dd"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-stone-700">{t('trips.template')}</label>
+                <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('trips.template')}</label>
                 <select
                   value={selectedTemplateId}
                   onChange={(e) => setSelectedTemplateId(e.target.value)}
-                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 dark:text-stone-100"
                 >
                   <option value="must-bring">{t('trips.defaultTemplate')}</option>
                   <option value="none">{t('trips.emptyList')}</option>
@@ -472,42 +472,42 @@ export default function TripListView({ trips, inventory, profile, customLists, a
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-stone-700 flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-stone-400" />
+              <label className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                 {t('trips.image')}
               </label>
               <div className="flex items-center gap-4">
                 {newTripImage && (
                   <div className="relative shrink-0">
-                    <img src={newTripImage} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-stone-200" />
+                    <img src={newTripImage} alt="Preview" className="w-16 h-16 rounded-xl object-cover border border-stone-200 dark:border-stone-700" />
                     <button
                       type="button"
                       onClick={() => setNewTripImage(undefined)}
-                      className="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 transition-colors"
+                      className="absolute -top-2 -right-2 bg-white dark:bg-stone-800 text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       title={t('trips.removeImage')}
                     >
                       <X className="w-3 h-3" />
                     </button>
                   </div>
                 )}
-                <label className="flex-1 bg-stone-50 border border-stone-200 border-dashed rounded-xl px-4 py-4 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-100 transition-colors">
-                  <span className="text-sm text-stone-500 font-medium">{t('trips.uploadImage')}</span>
+                <label className="flex-1 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 border-dashed rounded-xl px-4 py-4 flex flex-col items-center justify-center cursor-pointer hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors">
+                  <span className="text-sm text-stone-500 dark:text-stone-400 font-medium">{t('trips.uploadImage')}</span>
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                 </label>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100 dark:border-stone-700">
               <button
                 type="button"
                 onClick={() => setIsCreating(false)}
-                className="px-4 py-2.5 text-stone-600 font-medium hover:bg-stone-100 rounded-xl transition-colors"
+                className="px-4 py-2.5 text-stone-600 dark:text-stone-400 font-medium hover:bg-stone-100 dark:hover:bg-stone-700 rounded-xl transition-colors"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="submit"
-                className="bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl px-4 py-2.5 transition-colors"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-4 py-2.5 transition-colors"
               >
                 {t('trips.createAction')}
               </button>
@@ -519,7 +519,7 @@ export default function TripListView({ trips, inventory, profile, customLists, a
       <div className="grid grid-cols-1 gap-8">
         {upcomingTrips.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.upcomingTrips', 'Upcoming Trips')}</h3>
+            <h3 className="text-sm font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest px-1">{t('trips.upcomingTrips', 'Upcoming Trips')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {upcomingTrips.map(trip => <TripCard key={trip.id} trip={trip} onSelectTrip={onSelectTrip} profile={profile || undefined} />)}
             </div>
@@ -528,7 +528,7 @@ export default function TripListView({ trips, inventory, profile, customLists, a
 
         {sharedTrips.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.sharedTrips', 'Shared Trips')}</h3>
+            <h3 className="text-sm font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest px-1">{t('trips.sharedTrips', 'Shared Trips')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sharedTrips.map(trip => <TripCard key={trip.id} trip={trip} onSelectTrip={onSelectTrip} profile={profile || undefined} />)}
             </div>
@@ -537,7 +537,7 @@ export default function TripListView({ trips, inventory, profile, customLists, a
 
         {pastTrips.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.pastTrips', 'Past Trips')}</h3>
+            <h3 className="text-sm font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest px-1">{t('trips.pastTrips', 'Past Trips')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-75 grayscale-[0.2]">
               {pastTrips.map(trip => <TripCard key={trip.id} trip={trip} onSelectTrip={onSelectTrip} profile={profile || undefined} />)}
             </div>
@@ -545,13 +545,13 @@ export default function TripListView({ trips, inventory, profile, customLists, a
         )}
 
         {trips.length === 0 && !isCreating && !isJoining && (
-          <div className="text-center py-16 bg-white rounded-2xl border border-stone-200 border-dashed">
-            <Plane className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-            <h3 className="text-lg font-medium text-stone-900">{t('trips.noTrips')}</h3>
-            <p className="text-stone-500 mt-1 mb-6">{t('trips.noTripsTagline')}</p>
+          <div className="text-center py-16 bg-white dark:bg-stone-800 rounded-2xl border border-stone-200 dark:border-stone-700 border-dashed">
+            <Plane className="w-12 h-12 text-stone-300 dark:text-stone-600 mx-auto mb-3" />
+            <h3 className="text-lg font-medium text-stone-900 dark:text-white">{t('trips.noTrips')}</h3>
+            <p className="text-stone-500 dark:text-stone-400 mt-1 mb-6">{t('trips.noTripsTagline')}</p>
             <button
               onClick={() => setIsCreating(true)}
-              className="bg-stone-900 hover:bg-stone-800 text-white font-medium rounded-xl px-4 py-2 inline-flex items-center gap-2 transition-colors"
+              className="bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-stone-200 text-white dark:text-stone-900 font-medium rounded-xl px-4 py-2 inline-flex items-center gap-2 transition-colors"
             >
               <Plus className="w-5 h-5" />
               {t('trips.createTitle')}
@@ -560,11 +560,11 @@ export default function TripListView({ trips, inventory, profile, customLists, a
         )}
 
         {trips.length > 0 && upcomingTrips.length === 0 && pastTrips.length === 0 && sharedTrips.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
-            <p className="text-stone-500">{t('trips.noMatch')}</p>
+          <div className="text-center py-12 bg-white dark:bg-stone-800 rounded-2xl border border-stone-200 dark:border-stone-700 border-dashed">
+            <p className="text-stone-500 dark:text-stone-400">{t('trips.noMatch')}</p>
             <button 
               onClick={() => setFilterType('All')}
-              className="mt-3 text-emerald-600 font-medium hover:text-emerald-700"
+              className="mt-3 text-emerald-600 dark:text-emerald-400 font-medium hover:text-emerald-700 dark:hover:text-emerald-300"
             >
               {t('common.clearFilter')}
             </button>

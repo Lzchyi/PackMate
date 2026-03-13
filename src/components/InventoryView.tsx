@@ -227,20 +227,20 @@ export default function InventoryView({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-semibold">{t('inventory.title')}</h2>
-        <p className="text-stone-500 mt-1">{t('inventory.tagline')}</p>
+        <h2 className="text-2xl font-semibold text-stone-900 dark:text-stone-100">{t('inventory.title')}</h2>
+        <p className="text-stone-500 dark:text-stone-400 mt-1">{t('inventory.tagline')}</p>
       </div>
 
-      <div className="flex gap-4 border-b border-stone-200">
+      <div className="flex gap-4 border-b border-stone-200 dark:border-stone-700">
         <button
           onClick={() => setActiveTab('gear')}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'gear' ? 'border-emerald-500 text-emerald-700' : 'border-transparent text-stone-500 hover:text-stone-700'}`}
+          className={`pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'gear' ? 'border-emerald-500 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'}`}
         >
           <Box className="w-4 h-4" /> {t('inventory.gear')}
         </button>
         <button
           onClick={() => { setActiveTab('lists'); setEditingList(null); }}
-          className={`pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'lists' ? 'border-emerald-500 text-emerald-700' : 'border-transparent text-stone-500 hover:text-stone-700'}`}
+          className={`pb-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'lists' ? 'border-emerald-500 text-emerald-700 dark:text-emerald-400' : 'border-transparent text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'}`}
         >
           <ListIcon className="w-4 h-4" /> {t('inventory.lists')}
         </button>
@@ -248,19 +248,19 @@ export default function InventoryView({
 
       {activeTab === 'gear' && (
         <>
-          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
-            <h3 className="text-lg font-semibold mb-6">{t('inventory.addItem')}</h3>
+          <div className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 sm:p-8">
+            <h3 className="text-lg font-semibold mb-6 text-stone-900 dark:text-stone-100">{t('inventory.addItem')}</h3>
             <form onSubmit={handleAddItem} className="space-y-6">
               <div className="grid grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-stone-500 uppercase tracking-tight ml-1">{t('inventory.itemName')}</label>
+                  <label className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-tight ml-1">{t('inventory.itemName')}</label>
                   <input
                     type="text"
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
                     placeholder="e.g., Favorite Jacket"
                     list="item-suggestions"
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 h-[45px] text-sm"
+                    className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 h-[45px] text-sm text-stone-900 dark:text-stone-100"
                     required
                   />
                   <datalist id="item-suggestions">
@@ -270,20 +270,20 @@ export default function InventoryView({
                   </datalist>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-stone-500 uppercase tracking-tight ml-1">{t('inventory.category')}</label>
+                  <label className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-tight ml-1">{t('inventory.category')}</label>
                   <select
                     value={newItemCategory}
                     onChange={(e) => setNewItemCategory(e.target.value as Category)}
-                    className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 h-[45px] appearance-none text-sm"
+                    className="w-full bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 h-[45px] appearance-none text-sm text-stone-900 dark:text-stone-100"
                   >
                     {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c}`)}</option>)}
                   </select>
                 </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pt-4 border-t border-stone-100">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pt-4 border-t border-stone-100 dark:border-stone-700">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-stone-500 uppercase tracking-tight ml-1">{t('inventory.quantity')}</label>
+                  <label className="text-xs font-bold text-stone-500 dark:text-stone-400 uppercase tracking-tight ml-1">{t('inventory.quantity')}</label>
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map(qty => (
                       <button
@@ -293,7 +293,7 @@ export default function InventoryView({
                         className={`w-9 h-9 rounded-lg text-xs font-bold transition-all ${
                           newItemQuantity === qty 
                             ? 'bg-emerald-500 text-white shadow-sm' 
-                            : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                            : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
                         }`}
                       >
                         {qty}
@@ -308,7 +308,7 @@ export default function InventoryView({
                       className={`w-20 h-9 rounded-lg text-xs font-bold px-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all ${
                         newItemQuantity > 5 
                           ? 'bg-emerald-500 text-white placeholder-white/70' 
-                          : 'bg-stone-100 text-stone-500 placeholder-stone-400'
+                          : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 placeholder-stone-400 dark:placeholder-stone-500'
                       }`}
                     />
                   </div>
@@ -321,16 +321,16 @@ export default function InventoryView({
                       id="isMaster"
                       checked={newItemIsMaster}
                       onChange={(e) => setNewItemIsMaster(e.target.checked)}
-                      className="w-5 h-5 rounded border-stone-300 text-emerald-500 focus:ring-emerald-500"
+                      className="w-5 h-5 rounded border-stone-300 dark:border-stone-600 text-emerald-500 focus:ring-emerald-500 bg-stone-50 dark:bg-stone-900"
                     />
-                    <label htmlFor="isMaster" className="text-sm font-medium text-stone-700 cursor-pointer select-none whitespace-nowrap flex items-center gap-1.5">
+                    <label htmlFor="isMaster" className="text-sm font-medium text-stone-700 dark:text-stone-300 cursor-pointer select-none whitespace-nowrap flex items-center gap-1.5">
                       {t('inventory.mustBring')}
                       <button 
                         type="button"
                         onClick={() => setIsMustBringModalOpen(true)} 
-                        className="p-1 hover:bg-stone-100 rounded-full transition-colors"
+                        className="p-1 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-full transition-colors"
                       >
-                        <Info className="w-3.5 h-3.5 text-stone-400" />
+                        <Info className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
                       </button>
                     </label>
                   </div>
@@ -348,25 +348,25 @@ export default function InventoryView({
 
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
-              <h3 className="text-lg font-semibold">{t('inventory.addedGear', 'Added Gear')}</h3>
+              <h3 className="text-lg font-semibold text-stone-900 dark:text-stone-100">{t('inventory.addedGear', 'Added Gear')}</h3>
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <div className="relative flex-1 sm:flex-none">
-                  <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                  <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500" />
                   <select
                     value={filterCategory}
                     onChange={(e) => setFilterCategory(e.target.value)}
-                    className="w-full sm:w-40 bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none"
+                    className="w-full sm:w-40 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none text-stone-900 dark:text-stone-100"
                   >
                     <option value="All">{t('inventory.allCategories', 'All Categories')}</option>
                     {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c}`)}</option>)}
                   </select>
                 </div>
                 <div className="relative flex-1 sm:flex-none">
-                  <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                  <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500" />
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as 'recent' | 'name' | 'quantity')}
-                    className="w-full sm:w-44 bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none"
+                    className="w-full sm:w-44 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none text-stone-900 dark:text-stone-100"
                   >
                     <option value="recent">{t('inventory.sortRecent', 'Recently Added')}</option>
                     <option value="name">{t('inventory.sortName', 'Name (A-Z)')}</option>
@@ -382,16 +382,16 @@ export default function InventoryView({
               if (items.length === 0) return null;
 
               return (
-                <div key={category} className="bg-white rounded-2xl shadow-sm border border-stone-200">
-                  <div className="px-6 py-4 bg-stone-50 border-b border-stone-100 flex items-center gap-2 rounded-t-2xl">
-                    <Box className="w-5 h-5 text-stone-400" />
-                    <h3 className="font-semibold">{t(`category.${category}`)}</h3>
-                    <span className="text-xs font-medium bg-white border border-stone-200 px-2 py-0.5 rounded-full text-stone-500">
+                <div key={category} className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700">
+                  <div className="px-6 py-4 bg-stone-50 dark:bg-stone-900/50 border-b border-stone-100 dark:border-stone-700 flex items-center gap-2 rounded-t-2xl">
+                    <Box className="w-5 h-5 text-stone-400 dark:text-stone-500" />
+                    <h3 className="font-semibold text-stone-900 dark:text-stone-100">{t(`category.${category}`)}</h3>
+                    <span className="text-xs font-medium bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 px-2 py-0.5 rounded-full text-stone-500 dark:text-stone-400">
                       {items.length}
                     </span>
                   </div>
-                  <div className="divide-y divide-stone-100">
-                    <div className="px-6 py-2 bg-stone-50/50 flex items-center text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                  <div className="divide-y divide-stone-100 dark:divide-stone-700">
+                    <div className="px-6 py-2 bg-stone-50/50 dark:bg-stone-900/50 flex items-center text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-widest">
                       <div className="flex-1">{t('inventory.itemName')}</div>
                       <div className="flex items-center gap-4 shrink-0">
                         <div className="w-12 text-center">{t('inventory.quantity')}</div>
@@ -399,39 +399,39 @@ export default function InventoryView({
                       </div>
                     </div>
                     {items.map((item, index) => (
-                      <div key={item.id} className={`px-6 py-4 flex items-center justify-between hover:bg-stone-50 transition-colors gap-4 ${index === items.length - 1 ? 'rounded-b-2xl' : ''}`}>
+                      <div key={item.id} className={`px-6 py-4 flex items-center justify-between hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors gap-4 ${index === items.length - 1 ? 'rounded-b-2xl' : ''}`}>
                         <div className="flex-1 min-w-0">
                           {editingItemId === item.id ? (
                             <div className="flex flex-col gap-3">
                               <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-stone-400 uppercase tracking-tight">{t('inventory.itemName')}</label>
+                                <label className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-tight">{t('inventory.itemName')}</label>
                                 <input
                                   type="text"
                                   value={editName}
                                   onChange={(e) => setEditName(e.target.value)}
-                                  className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm"
+                                  className="w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm text-stone-900 dark:text-stone-100"
                                   autoFocus
                                 />
                               </div>
                               <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-tight">{t('inventory.category')}</label>
+                                  <label className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-tight">{t('inventory.category')}</label>
                                   <select
                                     value={editCategory}
                                     onChange={(e) => setEditCategory(e.target.value as Category)}
-                                    className="w-full bg-white border border-stone-200 rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm appearance-none"
+                                    className="w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-2 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm appearance-none text-stone-900 dark:text-stone-100"
                                   >
                                     {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c}`)}</option>)}
                                   </select>
                                 </div>
                                 <div className="space-y-1">
-                                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-tight">{t('inventory.quantity')}</label>
+                                  <label className="text-[10px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-tight">{t('inventory.quantity')}</label>
                                   <input
                                     type="number"
                                     min="1"
                                     value={editQuantity}
                                     onChange={(e) => setEditQuantity(parseInt(e.target.value) || 1)}
-                                    className="w-full bg-white border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm"
+                                    className="w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm text-stone-900 dark:text-stone-100"
                                   />
                                 </div>
                               </div>
@@ -439,7 +439,7 @@ export default function InventoryView({
                           ) : (
                             <div className="relative">
                               <span 
-                                className="font-medium text-stone-700 truncate block cursor-pointer hover:text-emerald-600 transition-colors"
+                                className="font-medium text-stone-700 dark:text-stone-200 truncate block cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setShowFullNameId(showFullNameId === item.id ? null : item.id);
@@ -448,9 +448,9 @@ export default function InventoryView({
                                 {t(`item.${item.name}`, item.name)}
                               </span>
                               {showFullNameId === item.id && (
-                                <div className="absolute z-50 left-0 top-full mt-2 p-3 bg-white text-stone-700 text-xs rounded-xl shadow-lg border border-stone-100 min-w-[180px] max-w-xs break-words animate-in fade-in slide-in-from-top-1 duration-200 pointer-events-none">
+                                <div className="absolute z-50 left-0 top-full mt-2 p-3 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 text-xs rounded-xl shadow-lg border border-stone-100 dark:border-stone-700 min-w-[180px] max-w-xs break-words animate-in fade-in slide-in-from-top-1 duration-200 pointer-events-none">
                                   <p className="font-medium leading-relaxed">{t(`item.${item.name}`, item.name)}</p>
-                                  <div className="absolute -top-1 left-4 w-2 h-2 bg-white border-t border-l border-stone-100 rotate-45" />
+                                  <div className="absolute -top-1 left-4 w-2 h-2 bg-white dark:bg-stone-800 border-t border-l border-stone-100 dark:border-stone-700 rotate-45" />
                                 </div>
                               )}
                             </div>
@@ -460,7 +460,7 @@ export default function InventoryView({
                         <div className="flex items-center gap-4 shrink-0">
                           {editingItemId !== item.id && (
                             <div className="w-12 flex justify-center">
-                              <span className="text-sm font-semibold text-stone-500">{item.quantity || 1}</span>
+                              <span className="text-sm font-semibold text-stone-500 dark:text-stone-400">{item.quantity || 1}</span>
                             </div>
                           )}
 
@@ -469,14 +469,14 @@ export default function InventoryView({
                               <>
                                 <button
                                   onClick={handleUpdateItem}
-                                  className="text-emerald-600 hover:text-emerald-700 p-2 transition-colors"
+                                  className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 p-2 transition-colors"
                                   title={t('common.save')}
                                 >
                                   <Save className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => setEditingItemId(null)}
-                                  className="text-stone-400 hover:text-stone-600 p-2 transition-colors"
+                                  className="text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 p-2 transition-colors"
                                   title={t('common.cancel')}
                                 >
                                   <X className="w-4 h-4" />
@@ -488,8 +488,8 @@ export default function InventoryView({
                                   onClick={() => toggleMaster(item.id)}
                                   className={`p-2 rounded-lg transition-colors ${
                                     item.isMaster 
-                                      ? 'text-amber-500 bg-amber-50' 
-                                      : 'text-stone-300 hover:text-stone-500'
+                                      ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' 
+                                      : 'text-stone-300 dark:text-stone-600 hover:text-stone-500 dark:hover:text-stone-400'
                                   }`}
                                   title={item.isMaster ? "Remove from Must Bring List" : "Add to Must Bring List"}
                                 >
@@ -497,14 +497,14 @@ export default function InventoryView({
                                 </button>
                                 <button
                                   onClick={() => startEditing(item)}
-                                  className="text-stone-400 hover:text-emerald-600 p-2 transition-colors"
+                                  className="text-stone-400 dark:text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-400 p-2 transition-colors"
                                   title={t('inventory.editItem')}
                                 >
                                   <Edit2 className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteItem(item.id)}
-                                  className="text-stone-400 hover:text-red-500 p-2 transition-colors"
+                                  className="text-stone-400 dark:text-stone-500 hover:text-red-500 dark:hover:text-red-400 p-2 transition-colors"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
@@ -519,15 +519,15 @@ export default function InventoryView({
               );
             })}
             {inventory.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
-                <Box className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-stone-900">{t('inventory.empty')}</h3>
-                <p className="text-stone-500 mt-1">{t('inventory.emptyTagline')}</p>
+              <div className="text-center py-12 bg-white dark:bg-stone-800 rounded-2xl border border-stone-200 dark:border-stone-700 border-dashed">
+                <Box className="w-12 h-12 text-stone-300 dark:text-stone-600 mx-auto mb-3" />
+                <h3 className="text-lg font-medium text-stone-900 dark:text-stone-100">{t('inventory.empty')}</h3>
+                <p className="text-stone-500 dark:text-stone-400 mt-1">{t('inventory.emptyTagline')}</p>
               </div>
             ) : filterCategory !== 'All' && groupedInventory[filterCategory as Category]?.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
-                <Filter className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-stone-900">{t('inventory.noItemsInFilter')}</h3>
+              <div className="text-center py-12 bg-white dark:bg-stone-800 rounded-2xl border border-stone-200 dark:border-stone-700 border-dashed">
+                <Filter className="w-12 h-12 text-stone-300 dark:text-stone-600 mx-auto mb-3" />
+                <h3 className="text-lg font-medium text-stone-900 dark:text-stone-100">{t('inventory.noItemsInFilter')}</h3>
               </div>
             ) : null}
           </div>
@@ -538,8 +538,8 @@ export default function InventoryView({
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex-1">
-              <h3 className="text-lg font-medium text-stone-900">{t('inventory.customLists')}</h3>
-              <p className="text-sm text-stone-500">{t('inventory.customListsTagline')}</p>
+              <h3 className="text-lg font-medium text-stone-900 dark:text-stone-100">{t('inventory.customLists')}</h3>
+              <p className="text-sm text-stone-500 dark:text-stone-400">{t('inventory.customListsTagline')}</p>
             </div>
             <button
               onClick={() => setEditingList({ id: nanoid(), name: '', items: [] })}
@@ -550,9 +550,9 @@ export default function InventoryView({
           </div>
 
           {presetLists.length > 0 && (
-            <div className="bg-stone-50 rounded-2xl p-6 border border-stone-200">
+            <div className="bg-stone-50 dark:bg-stone-900/50 rounded-2xl p-6 border border-stone-200 dark:border-stone-700">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                <h4 className="text-sm font-medium text-stone-700 flex items-center gap-2">
+                <h4 className="text-sm font-medium text-stone-700 dark:text-stone-300 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-emerald-500" />
                   {t('inventory.quickStart')}
                 </h4>
@@ -562,15 +562,15 @@ export default function InventoryView({
                     id="includeEssentials"
                     checked={includeEssentialsInPreset}
                     onChange={(e) => setIncludeEssentialsInPreset(e.target.checked)}
-                    className="w-4 h-4 rounded border-stone-300 text-emerald-500 focus:ring-emerald-500"
+                    className="w-4 h-4 rounded border-stone-300 dark:border-stone-600 text-emerald-500 focus:ring-emerald-500 bg-stone-50 dark:bg-stone-900"
                   />
-                  <label htmlFor="includeEssentials" className="text-sm text-stone-600 cursor-pointer select-none flex items-center gap-2">
+                  <label htmlFor="includeEssentials" className="text-sm text-stone-600 dark:text-stone-400 cursor-pointer select-none flex items-center gap-2">
                     {t('inventory.includeEssentials')}
-                    <button onClick={() => setIsAboutModalOpen(true)} className="p-1 hover:bg-stone-200 rounded-full">
-                      <Info className="w-4 h-4 text-stone-400" />
+                    <button onClick={() => setIsAboutModalOpen(true)} className="p-1 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-full">
+                      <Info className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                     </button>
-                    <button onClick={() => setIsSettingsModalOpen(true)} className="p-1 hover:bg-stone-200 rounded-full">
-                      <Settings className="w-4 h-4 text-stone-400" />
+                    <button onClick={() => setIsSettingsModalOpen(true)} className="p-1 hover:bg-stone-200 dark:hover:bg-stone-700 rounded-full">
+                      <Settings className="w-4 h-4 text-stone-400 dark:text-stone-500" />
                     </button>
                   </label>
                 </div>
@@ -591,7 +591,7 @@ export default function InventoryView({
                     <button
                       key={key}
                       onClick={() => handleAddPresetList(key, items)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-emerald-50 border border-stone-200 hover:border-emerald-200 text-stone-700 hover:text-emerald-700 text-sm font-medium transition-all shadow-sm"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 border border-stone-200 dark:border-stone-700 hover:border-emerald-200 dark:hover:border-emerald-800 text-stone-700 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm font-medium transition-all shadow-sm"
                     >
                       <Plus className="w-4 h-4" />
                       {t(`type.${key}`, key)} {t('nav.trips')} ({count} {t('common.items')})
@@ -603,38 +603,38 @@ export default function InventoryView({
           )}
 
           {customLists.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
-              <ListIcon className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-stone-900">{t('inventory.noLists')}</h3>
-              <p className="text-stone-500 mt-1">{t('inventory.noListsTagline')}</p>
+            <div className="text-center py-12 bg-white dark:bg-stone-800 rounded-2xl border border-stone-200 dark:border-stone-700 border-dashed">
+              <ListIcon className="w-12 h-12 text-stone-300 dark:text-stone-600 mx-auto mb-3" />
+              <h3 className="text-lg font-medium text-stone-900 dark:text-stone-100">{t('inventory.noLists')}</h3>
+              <p className="text-stone-500 dark:text-stone-400 mt-1">{t('inventory.noListsTagline')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {customLists.map(list => (
-                <div key={list.id} className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 hover:border-emerald-500/30 transition-colors">
+                <div key={list.id} className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 p-6 hover:border-emerald-500/30 transition-colors">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="font-semibold text-lg text-stone-900">{list.name}</h3>
-                      <p className="text-sm text-stone-500">{list.items.length} {t('common.items')}</p>
+                      <h3 className="font-semibold text-lg text-stone-900 dark:text-stone-100">{list.name}</h3>
+                      <p className="text-sm text-stone-500 dark:text-stone-400">{list.items.length} {t('common.items')}</p>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => setViewingList(list)}
-                        className="p-2 text-stone-400 hover:text-emerald-600 transition-colors bg-stone-50 hover:bg-emerald-50 rounded-lg"
+                        className="p-2 text-stone-400 dark:text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors bg-stone-50 dark:bg-stone-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg"
                         title={t('inventory.viewList')}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setEditingList(list)}
-                        className="p-2 text-stone-400 hover:text-emerald-600 transition-colors bg-stone-50 hover:bg-emerald-50 rounded-lg"
+                        className="p-2 text-stone-400 dark:text-stone-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors bg-stone-50 dark:bg-stone-900 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg"
                         title={t('inventory.editList')}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteList(list.id)}
-                        className="p-2 text-stone-400 hover:text-red-600 transition-colors bg-stone-50 hover:bg-red-50 rounded-lg"
+                        className="p-2 text-stone-400 dark:text-stone-500 hover:text-red-600 dark:hover:text-red-400 transition-colors bg-stone-50 dark:bg-stone-900 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                         title={t('inventory.deleteList')}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -643,12 +643,12 @@ export default function InventoryView({
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {list.items.slice(0, 5).map((item, idx) => (
-                      <span key={idx} className="text-xs font-medium bg-stone-100 text-stone-600 px-2.5 py-1 rounded-lg">
+                      <span key={idx} className="text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 px-2.5 py-1 rounded-lg">
                         {t(`item.${item.name}`, item.name)}
                       </span>
                     ))}
                     {list.items.length > 5 && (
-                      <span className="text-xs font-medium bg-stone-50 text-stone-400 px-2.5 py-1 rounded-lg border border-stone-100">
+                      <span className="text-xs font-medium bg-stone-50 dark:bg-stone-900 text-stone-400 dark:text-stone-500 px-2.5 py-1 rounded-lg border border-stone-100 dark:border-stone-700">
                         +{list.items.length - 5} {t('inventory.more')}
                       </span>
                     )}
@@ -661,21 +661,21 @@ export default function InventoryView({
       )}
 
       {activeTab === 'lists' && editingList && (
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
-          <div className="p-6 border-b border-stone-100 bg-stone-50/50">
+        <div className="bg-white dark:bg-stone-800 rounded-2xl shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden">
+          <div className="p-6 border-b border-stone-100 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-900/50">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold">{customLists.some(l => l.id === editingList.id) ? t('inventory.editList') : t('inventory.createList')}</h3>
+              <h3 className="text-xl font-semibold text-stone-900 dark:text-stone-100">{customLists.some(l => l.id === editingList.id) ? t('inventory.editList') : t('inventory.createList')}</h3>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setEditingList(null)}
-                  className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleSaveList}
                   disabled={!editingList.name.trim()}
-                  className="bg-stone-900 hover:bg-stone-800 disabled:bg-stone-300 text-white font-medium rounded-xl px-6 py-2 flex items-center gap-2 transition-colors"
+                  className="bg-stone-900 dark:bg-stone-700 hover:bg-stone-800 dark:hover:bg-stone-600 disabled:bg-stone-300 dark:disabled:bg-stone-600 text-white font-medium rounded-xl px-6 py-2 flex items-center gap-2 transition-colors"
                 >
                   <Save className="w-4 h-4" /> {t('inventory.saveList')}
                 </button>
@@ -683,13 +683,13 @@ export default function InventoryView({
             </div>
 
             <div className="space-y-2 max-w-md">
-              <label className="text-sm font-medium text-stone-700">{t('inventory.listName')}</label>
+              <label className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('inventory.listName')}</label>
               <input
                 type="text"
                 value={editingList.name}
                 onChange={(e) => setEditingList({ ...editingList, name: e.target.value })}
                 placeholder="e.g., Ski Trip Essentials"
-                className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-lg font-medium"
+                className="w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-lg font-medium text-stone-900 dark:text-stone-100"
                 autoFocus
               />
             </div>
@@ -699,10 +699,10 @@ export default function InventoryView({
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-medium text-stone-900">{t('inventory.itemsInList')} ({editingList.items.length})</h4>
+                  <h4 className="font-medium text-stone-900 dark:text-stone-100">{t('inventory.itemsInList')} ({editingList.items.length})</h4>
                   <button
                     onClick={handleAddMustBringToList}
-                    className="text-sm font-medium text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                    className="text-sm font-medium text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
                   >
                     <Star className="w-3.5 h-3.5" /> {t('inventory.addAllMustBring')}
                   </button>
@@ -714,19 +714,19 @@ export default function InventoryView({
                     value={newListItemName}
                     onChange={(e) => setNewListItemName(e.target.value)}
                     placeholder={t('inventory.addCustomItem')}
-                    className="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    className="flex-1 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-stone-900 dark:text-stone-100"
                   />
                   <select
                     value={newListItemCategory}
                     onChange={(e) => setNewListItemCategory(e.target.value as Category)}
-                    className="w-32 bg-stone-50 border border-stone-200 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    className="w-32 bg-stone-50 dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-stone-900 dark:text-stone-100"
                   >
                     {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c}`)}</option>)}
                   </select>
                   <button
                     type="submit"
                     disabled={!newListItemName.trim()}
-                    className="bg-stone-100 hover:bg-stone-200 disabled:opacity-50 text-stone-700 rounded-xl px-3 py-2 flex items-center justify-center transition-colors"
+                    className="bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 disabled:opacity-50 text-stone-700 dark:text-stone-300 rounded-xl px-3 py-2 flex items-center justify-center transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -734,22 +734,22 @@ export default function InventoryView({
 
                 <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                   {editingList.items.length === 0 ? (
-                    <p className="text-center text-sm text-stone-500 py-8 border border-stone-100 border-dashed rounded-xl">
+                    <p className="text-center text-sm text-stone-500 dark:text-stone-400 py-8 border border-stone-100 dark:border-stone-700 border-dashed rounded-xl">
                       {t('inventory.noItemsAdded')}
                     </p>
                   ) : (
                     editingList.items.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-stone-100 bg-stone-50/50 group">
+                      <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-stone-100 dark:border-stone-700 bg-stone-50/50 dark:bg-stone-900/50 group">
                         <div>
-                          <p className="font-medium text-stone-900 text-sm">{t(`item.${item.name}`, item.name)}</p>
-                          <p className="text-xs text-stone-500">{t(`category.${item.category}`)}</p>
+                          <p className="font-medium text-stone-900 dark:text-stone-100 text-sm">{t(`item.${item.name}`, item.name)}</p>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">{t(`category.${item.category}`)}</p>
                         </div>
                         <button
                           onClick={() => setEditingList({
                             ...editingList,
                             items: editingList.items.filter((_, i) => i !== idx)
                           })}
-                          className="p-1.5 text-stone-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                          className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -760,8 +760,8 @@ export default function InventoryView({
               </div>
             </div>
 
-            <div className="space-y-4 lg:border-l lg:border-stone-100 lg:pl-8">
-              <h4 className="font-medium text-stone-900">{t('inventory.selectFromGear')}</h4>
+            <div className="space-y-4 lg:border-l lg:border-stone-100 dark:lg:border-stone-700 lg:pl-8">
+              <h4 className="font-medium text-stone-900 dark:text-stone-100">{t('inventory.selectFromGear')}</h4>
               <div className="space-y-6 max-h-[500px] overflow-y-auto pr-2">
                 {CATEGORIES.map(category => {
                   const items = inventory.filter(item => item.category === category);
@@ -769,7 +769,7 @@ export default function InventoryView({
 
                   return (
                     <div key={category}>
-                      <h5 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">{t(`category.${category}`)}</h5>
+                      <h5 className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider mb-2">{t(`category.${category}`)}</h5>
                       <div className="space-y-1">
                         {items.map(item => {
                           const isSelected = editingList.items.some(i => i.name.toLowerCase() === item.name.toLowerCase());
@@ -777,14 +777,14 @@ export default function InventoryView({
                             <button
                               key={item.id}
                               onClick={() => toggleItemInList(item)}
-                              className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50 transition-colors text-left"
+                              className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors text-left"
                             >
                               {isSelected ? (
                                 <CheckSquare className="w-5 h-5 text-emerald-500 shrink-0" />
                               ) : (
-                                <Square className="w-5 h-5 text-stone-300 shrink-0" />
+                                <Square className="w-5 h-5 text-stone-300 dark:text-stone-600 shrink-0" />
                               )}
-                              <span className={`text-sm ${isSelected ? 'font-medium text-stone-900' : 'text-stone-600'}`}>
+                              <span className={`text-sm ${isSelected ? 'font-medium text-stone-900 dark:text-stone-100' : 'text-stone-600 dark:text-stone-400'}`}>
                                 {t(`item.${item.name}`, item.name)}
                               </span>
                               {item.isMaster && (
