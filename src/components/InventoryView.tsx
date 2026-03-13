@@ -527,7 +527,7 @@ export default function InventoryView({
             ) : filterCategory !== 'All' && groupedInventory[filterCategory as Category]?.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
                 <Filter className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-stone-900">{t('inventory.noItemsInFilter', 'No items in this category')}</h3>
+                <h3 className="text-lg font-medium text-stone-900">{t('inventory.noItemsInFilter')}</h3>
               </div>
             ) : null}
           </div>
