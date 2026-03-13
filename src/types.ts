@@ -9,6 +9,27 @@ export type Category =
   | 'Skincare'
   | 'Makeup'
   | 'Hair Care'
+  | 'Sports'
+  | 'Other';
+
+export type TripType = 
+  | 'Beach'
+  | 'Business'
+  | 'Camping'
+  | 'Diving'
+  | 'Hiking'
+  | 'Leisure'
+  | 'Road Trip'
+  | 'Skiing'
+  | 'Other';
+
+export type TransportationType = 
+  | 'Flight'
+  | 'Car'
+  | 'Train'
+  | 'Bus'
+  | 'Cruise'
+  | 'Motorcycle'
   | 'Other';
 
 export interface InventoryItem {
@@ -26,20 +47,30 @@ export interface PackingItem {
   isPacked: boolean;
   quantity?: number;
   medicineName?: string;
+  cameraType?: string;
+  lensDetails?: string;
+  cableType?: string;
+  gamingConsoleType?: string;
+  ownerId?: string;
+  isShared?: boolean;
 }
 
 export interface Trip {
   id: string;
   name: string;
-  tripType: string;
-  transportationType?: string;
+  tripType: TripType | string;
+  transportationType?: TransportationType | string;
   duration: string; // Keep for backwards compatibility
   startDate?: string;
   endDate?: string;
   items: PackingItem[];
   createdAt: number;
   imageUrl?: string;
-  notificationsEnabled?: boolean;
+  uid?: string;
+  participants?: string[];
+  participantProfiles?: Record<string, { name: string; avatarUrl?: string }>;
+  inviteToken?: string;
+  lastConsumedToken?: string;
 }
 
 export interface CustomList {
@@ -56,6 +87,5 @@ export interface UserProfile {
   mustBringItems?: { id: string; name: string; category: Category }[];
   avatarUrl?: string;
   language?: 'en-GB' | 'zh-CN';
-  masterNotificationsEnabled?: boolean;
 }
 

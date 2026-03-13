@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { UserProfile, InventoryItem } from '../types';
-import { User, Save, LogOut, ShieldCheck, Globe, Shield, X, Camera, Trash2, Bell, BellOff, Info } from 'lucide-react';
+import { User, Save, LogOut, ShieldCheck, Globe, Shield, X, Camera, Trash2, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { storage } from '../firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -25,7 +25,6 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
-  const [showNotificationInfo, setShowNotificationInfo] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -92,18 +91,6 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
       i18n.changeLanguage(lang);
     } catch (err) {
       console.error('Failed to update language', err);
-    }
-  };
-
-  const handleToggleMasterNotifications = async () => {
-    if (!profile) return;
-    try {
-      await onUpdateProfile({
-        ...profile,
-        masterNotificationsEnabled: !profile.masterNotificationsEnabled
-      });
-    } catch (err) {
-      console.error('Failed to update notifications', err);
     }
   };
 
@@ -223,32 +210,6 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
       <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${profile?.masterNotificationsEnabled !== false ? 'bg-emerald-100 text-emerald-600' : 'bg-stone-100 text-stone-600'}`}>
-              {profile?.masterNotificationsEnabled !== false ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold">{t('profile.notifications')}</h3>
-                <button 
-                  onClick={() => setShowNotificationInfo(true)}
-                  className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
-                >
-                  <Info className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <p className="text-xs text-stone-500">{t('profile.notificationsDescription')}</p>
-            </div>
-          </div>
-          <button
-            onClick={handleToggleMasterNotifications}
-            className={`w-12 h-6 rounded-full transition-colors relative ${profile?.masterNotificationsEnabled !== false ? 'bg-emerald-500' : 'bg-stone-300'}`}
-          >
-            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${profile?.masterNotificationsEnabled !== false ? 'right-1' : 'left-1'}`} />
-          </button>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
               <Globe className="w-5 h-5" />
             </div>
@@ -344,27 +305,6 @@ export default function ProfileView({ profile, user, isGuest, inventory, onUpdat
               className="w-full mt-8 bg-stone-900 text-white font-medium rounded-xl px-6 py-3 hover:bg-stone-800 transition-colors"
             >
               {t('common.close')}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showNotificationInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setShowNotificationInfo(false)} />
-          <div className="relative bg-white rounded-3xl shadow-xl w-full max-w-md p-8 text-center">
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Bell className="w-8 h-8" />
-            </div>
-            <h3 className="text-2xl font-bold mb-3">{t('profile.notificationsInfoTitle')}</h3>
-            <p className="text-stone-600 leading-relaxed mb-8 whitespace-nowrap">
-              {t('profile.notificationsInfoMessage')}
-            </p>
-            <button
-              onClick={() => setShowNotificationInfo(false)}
-              className="w-full bg-stone-900 text-white font-medium rounded-xl px-6 py-3 hover:bg-stone-800 transition-colors"
-            >
-              {t('common.gotIt')}
             </button>
           </div>
         </div>

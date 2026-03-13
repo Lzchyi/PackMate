@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "react-datepicker/dist/react-datepicker.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Custom DatePicker Styles */
 .react-datepicker-wrapper {
   width: 100%;

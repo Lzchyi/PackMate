@@ -1,28 +1,37 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { nanoid } from 'nanoid';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
 import DatePicker from 'react-datepicker';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInDays, startOfDay } from 'date-fns';
 import { Trip, InventoryItem, UserProfile, CustomList, PackingItem } from '../types';
 import { TRIP_TYPES, TRANSPORTATION_TYPES, SUGGESTED_ITEMS } from '../data/constants';
-import { Map, Calendar, Plus, ChevronRight, Plane, Filter, ArrowUpDown, Image as ImageIcon, Download, X, Car } from 'lucide-react';
+import { Map, Calendar, Plus, ChevronRight, Plane, Filter, ArrowUpDown, Image as ImageIcon, Download, X, Car, Clock, Users } from 'lucide-react';
 import { resizeImage } from '../utils/image';
 import { formatDateRange } from '../utils/date';
+import ConfirmationModal from './ConfirmationModal';
+import { TripCard } from './TripCard';
 
 interface Props {
   trips: Trip[];
   inventory: InventoryItem[];
   profile: UserProfile | null;
   customLists: CustomList[];
+  allEssentials: InventoryItem[];
   onAddTrip: (trip: Trip) => void;
   onDeleteTrip: (id: string) => void;
   onSelectTrip: (id: string) => void;
+  onJoinTrip: (code: string) => Promise<void>;
 }
 
 type SortOption = 'newest' | 'oldest' | 'name' | 'progress';
 
-export default function TripListView({ trips, inventory, profile, customLists, onAddTrip, onDeleteTrip, onSelectTrip }: Props) {
+export default function TripListView({ trips, inventory, profile, customLists, allEssentials, onAddTrip, onDeleteTrip, onSelectTrip, onJoinTrip }: Props) {
   const { t } = useTranslation();
   const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [isSubmittingJoin, setIsSubmittingJoin] = useState(false);
   const [newTripName, setNewTripName] = useState('');
   const [newTripType, setNewTripType] = useState(TRIP_TYPES[0]);
   const [newTripCustomType, setNewTripCustomType] = useState('');
@@ -31,6 +40,9 @@ export default function TripListView({ trips, inventory, profile, customLists, o
   const [startDate, endDate] = dateRange;
   const [newTripImage, setNewTripImage] = useState<string | undefined>();
   
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isImportStartModalOpen, setIsImportStartModalOpen] = useState(false);
+  const [pendingImportTrip, setPendingImportTrip] = useState<Trip | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [filterType, setFilterType] = useState<string>('All');
   
@@ -44,7 +56,7 @@ export default function TripListView({ trips, inventory, profile, customLists, o
       setNewTripImage(base64);
     } catch (err) {
       console.error('Failed to resize image', err);
-      alert(t('trips.imageResizeError'));
+      toast.error(t('trips.imageResizeError'));
     }
   };
 
@@ -61,23 +73,23 @@ export default function TripListView({ trips, inventory, profile, customLists, o
           // Generate new ID to avoid collisions
           const newTrip: Trip = {
             ...importedTrip,
-            id: Math.random().toString(36).substring(2, 9),
+            id: nanoid(),
             createdAt: Date.now(),
             // Reset packed status for imported trips
             items: importedTrip.items.map((item: any) => ({
               ...item,
-              id: Math.random().toString(36).substring(2, 9),
+              id: nanoid(),
               isPacked: false
             }))
           };
-          onAddTrip(newTrip);
-          onSelectTrip(newTrip.id);
+          setPendingImportTrip(newTrip);
+          setIsImportModalOpen(true);
         } else {
-          alert(t('trips.importError'));
+          toast.error(t('trips.importError'));
         }
       } catch (err) {
         console.error('Failed to parse trip file', err);
-        alert(t('trips.importError'));
+        toast.error(t('trips.importError'));
       }
     };
     reader.readAsText(file);
@@ -90,6 +102,22 @@ export default function TripListView({ trips, inventory, profile, customLists, o
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('must-bring');
 
+  const handleJoinSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!joinCode.trim() || isSubmittingJoin) return;
+
+    setIsSubmittingJoin(true);
+    try {
+      await onJoinTrip(joinCode);
+      setIsJoining(false);
+      setJoinCode('');
+    } catch (err) {
+      // Error is handled in App.tsx
+    } finally {
+      setIsSubmittingJoin(false);
+    }
+  };
+
   const handleCreateTrip = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTripName.trim() || !startDate || !endDate) return;
@@ -98,38 +126,31 @@ export default function TripListView({ trips, inventory, profile, customLists, o
     const formattedEndDate = format(endDate, 'yyyy-MM-dd');
 
     let initialItems: PackingItem[] = [];
+    
+    // Always include "Must Bring" items
+    const mustBringItems: PackingItem[] = inventory.filter(item => item.isMaster).map(item => ({
+      id: nanoid(),
+      name: item.name,
+      category: item.category,
+      isPacked: false,
+      quantity: item.quantity || 1
+    }));
+
+    let templateItems: PackingItem[] = [];
     if (selectedTemplateId === 'must-bring') {
-      // Add items marked as "Must Bring" in inventory
-      const masterItems = inventory.filter(item => item.isMaster).map(item => ({
-        id: Math.random().toString(36).substring(2, 9),
-        name: item.name,
-        category: item.category,
-        isPacked: false,
-        quantity: item.quantity || 1
-      }));
-      
       // Also add "All Essentials" suggested items
-      const essentialItems = (SUGGESTED_ITEMS['All'] || []).map(item => ({
-        id: Math.random().toString(36).substring(2, 9),
+      templateItems = allEssentials.map(item => ({
+        id: nanoid(),
         name: item.name,
         category: item.category,
         isPacked: false,
         quantity: 1
       }));
-
-      // Combine and avoid duplicates by name
-      const combined = [...masterItems];
-      essentialItems.forEach(item => {
-        if (!combined.some(c => c.name.toLowerCase() === item.name.toLowerCase())) {
-          combined.push(item);
-        }
-      });
-      initialItems = combined;
     } else if (selectedTemplateId !== 'none') {
       const list = customLists?.find(l => l.id === selectedTemplateId);
       if (list) {
-        initialItems = list.items.map(item => ({
-          id: Math.random().toString(36).substring(2, 9),
+        templateItems = list.items.map(item => ({
+          id: nanoid(),
           name: item.name,
           category: item.category,
           isPacked: false,
@@ -138,10 +159,19 @@ export default function TripListView({ trips, inventory, profile, customLists, o
       }
     }
 
+    // Combine and avoid duplicates by name
+    const combined = [...mustBringItems];
+    templateItems.forEach(item => {
+      if (!combined.some(c => c.name.toLowerCase() === item.name.toLowerCase())) {
+        combined.push(item);
+      }
+    });
+    initialItems = combined;
+
     const finalTripType = newTripType === 'Other' ? newTripCustomType.trim() || 'Other' : newTripType;
 
     const newTrip: Trip = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: nanoid(),
       name: newTripName.trim(),
       tripType: finalTripType,
       transportationType: newTripTransportation,
@@ -166,120 +196,63 @@ export default function TripListView({ trips, inventory, profile, customLists, o
       await onAddTrip(newTrip);
     } catch (err) {
       console.error('Failed to create trip', err);
-      alert(t('trips.createError') || 'Failed to create trip. Please try again.');
+      toast.error(t('trips.createError') || 'Failed to create trip. Please try again.');
     }
   };
 
-  const { upcomingTrips, pastTrips } = useMemo(() => {
+  const { upcomingTrips, pastTrips, sharedTrips } = useMemo(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
     let filtered = [...trips];
     
     if (filterType !== 'All') {
-      filtered = filtered.filter(t => t.tripType === filterType);
+      if (filterType === 'Shared') {
+        filtered = filtered.filter(t => (t.participants?.length || 0) > 1);
+      } else {
+        filtered = filtered.filter(t => t.tripType === filterType);
+      }
     }
 
     const upcoming: Trip[] = [];
     const past: Trip[] = [];
+    const shared: Trip[] = [];
 
     filtered.forEach(trip => {
+      const isShared = (trip.participants?.length || 0) > 1;
       const tripEndDate = trip.endDate ? parseISO(trip.endDate) : null;
-      if (tripEndDate && tripEndDate < now) {
+      const isPast = tripEndDate && tripEndDate < now;
+
+      if (isPast) {
         past.push(trip);
+      } else if (isShared) {
+        shared.push(trip);
       } else {
         upcoming.push(trip);
       }
     });
 
-    // Sort upcoming: nearest first
-    upcoming.sort((a, b) => {
-      if (sortBy === 'newest') {
-        const dateA = a.startDate ? parseISO(a.startDate).getTime() : 0;
-        const dateB = b.startDate ? parseISO(b.startDate).getTime() : 0;
-        return dateA - dateB;
-      }
-      // Other sorts
-      if (sortBy === 'oldest') return a.createdAt - b.createdAt;
-      if (sortBy === 'name') return a.name.localeCompare(b.name);
-      if (sortBy === 'progress') {
-        const progA = a.items.length ? a.items.filter(i => i.isPacked).length / a.items.length : 0;
-        const progB = b.items.length ? b.items.filter(i => i.isPacked).length / b.items.length : 0;
-        return progB - progA;
-      }
-      return b.createdAt - a.createdAt;
-    });
+    // Sort function
+    const sortTrips = (tripsToSort: Trip[]) => {
+      return tripsToSort.sort((a, b) => {
+        if (sortBy === 'newest') {
+          const dateA = a.startDate ? parseISO(a.startDate).getTime() : 0;
+          const dateB = b.startDate ? parseISO(b.startDate).getTime() : 0;
+          return dateA - dateB;
+        }
+        if (sortBy === 'oldest') return a.createdAt - b.createdAt;
+        if (sortBy === 'name') return a.name.localeCompare(b.name);
+        if (sortBy === 'progress') {
+          const progA = a.items.length ? a.items.filter(i => i.isPacked).length / a.items.length : 0;
+          const progB = b.items.length ? b.items.filter(i => i.isPacked).length / b.items.length : 0;
+          return progB - progA;
+        }
+        return b.createdAt - a.createdAt;
+      });
+    };
 
-    // Sort past: most recent first
-    past.sort((a, b) => {
-      const dateA = a.endDate ? parseISO(a.endDate).getTime() : 0;
-      const dateB = b.endDate ? parseISO(b.endDate).getTime() : 0;
-      return dateB - dateA;
-    });
-
-    return { upcomingTrips: upcoming, pastTrips: past };
-  }, [trips, filterType, sortBy]);
-
-  const renderTripCard = (trip: Trip) => {
-    const packedCount = trip.items.filter(i => i.isPacked).length;
-    const totalCount = trip.items.length;
-    const progress = totalCount === 0 ? 0 : Math.round((packedCount / totalCount) * 100);
-
-    return (
-      <div
-        key={trip.id}
-        onClick={() => onSelectTrip(trip.id)}
-        className="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden hover:border-emerald-500/50 hover:shadow-md transition-all text-left group flex flex-col sm:flex-row relative cursor-pointer"
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectTrip(trip.id); }}
-      >
-        <div className="h-40 sm:h-auto sm:w-56 relative shrink-0">
-          {trip.imageUrl ? (
-            <img src={trip.imageUrl} alt={trip.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-emerald-600 to-teal-700" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          
-          <div className="absolute bottom-3 left-3 right-3">
-            <h3 className="text-2xl font-bold text-white drop-shadow-md mb-2 truncate">
-              {trip.name}
-            </h3>
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-[10px] text-white font-medium whitespace-nowrap">
-                <Plane className="w-2.5 h-2.5 text-emerald-400" /> 
-                {t(`type.${trip.tripType}`, trip.tripType)}
-              </span>
-              {trip.transportationType && (
-                <span className="flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-[10px] text-white font-medium whitespace-nowrap">
-                  <Car className="w-2.5 h-2.5 text-blue-400" /> 
-                  {t(`transport.${trip.transportationType}`, trip.transportationType)}
-                </span>
-              )}
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-[10px] text-white font-medium whitespace-nowrap">
-                <Calendar className="w-2.5 h-2.5 text-purple-400" /> 
-                {trip.startDate && trip.endDate ? formatDateRange(trip.startDate, trip.endDate) : trip.duration}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-emerald-400 rounded-full" 
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <span className="text-[10px] font-medium text-white/80">{packedCount}/{totalCount}</span>
-            </div>
-          </div>
-
-          {profile?.avatarUrl && (
-            <img src={profile.avatarUrl} alt="Avatar" className="absolute top-3 left-3 w-8 h-8 rounded-full border-2 border-white/20 shadow-sm object-cover" />
-          )}
-        </div>
-      </div>
-    );
-  };
+    return { upcomingTrips: sortTrips(upcoming), pastTrips: sortTrips(past), sharedTrips: sortTrips(shared) };
+  }, [trips, filterType, sortBy, profile?.uid]);
 
   return (
     <div className="space-y-8">
@@ -288,7 +261,7 @@ export default function TripListView({ trips, inventory, profile, customLists, o
           <h2 className="text-2xl font-semibold">{t('trips.title')}</h2>
           <p className="text-stone-500 mt-1">{t('trips.tagline')}</p>
         </div>
-        {!isCreating && (
+        {!isCreating && !isJoining && (
           <div className="flex items-center gap-2">
             <input 
               type="file" 
@@ -298,50 +271,111 @@ export default function TripListView({ trips, inventory, profile, customLists, o
               onChange={handleImportTrip} 
             />
             <button
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl px-4 py-2 flex items-center justify-center gap-2 transition-colors"
+              onClick={() => setIsImportStartModalOpen(true)}
+              className="bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors"
               title={t('trips.import')}
             >
               <Download className="w-5 h-5" />
               <span>{t('trips.import')}</span>
             </button>
             <button
+              onClick={() => setIsJoining(true)}
+              className="bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium rounded-xl px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors"
+            >
+              <Users className="w-5 h-5" />
+              <span className="whitespace-nowrap">{t('trips.join', 'Join')}</span>
+            </button>
+            <button
               onClick={() => setIsCreating(true)}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-4 py-2 flex items-center justify-center gap-2 transition-colors"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl px-4 py-2 flex-1 flex items-center justify-center gap-2 transition-colors"
             >
               <Plus className="w-5 h-5" />
-              <span>{t('trips.new')}</span>
+              <span className="whitespace-nowrap">{t('trips.new', 'New')}</span>
             </button>
           </div>
         )}
       </div>
 
-      {trips.length > 0 && !isCreating && (
-        <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
-          <div className="flex-1 flex items-center gap-2">
-            <Filter className="w-4 h-4 text-stone-400" />
-            <select 
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 flex-1 sm:flex-none"
-            >
-              <option value="All">{t('trips.allTypes')}</option>
-              {TRIP_TYPES.map(type => <option key={type} value={type}>{t(`type.${type}`, type)}</option>)}
-            </select>
+      {trips.length > 0 && !isCreating && !isJoining && (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+          <h3 className="text-lg font-semibold">{t('inventory.filterAndSort')}</h3>
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
+              <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <select 
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="w-full sm:w-40 bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none"
+              >
+                {['All', 'Shared', ...TRIP_TYPES.filter(t => t !== 'Other')].sort().concat('Other').map(type => (
+                  <option key={type} value={type}>
+                    {type === 'All' ? t('trips.allTypes') : type === 'Shared' ? t('trips.shared', 'Shared') : t(`type.${type}`, type)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="relative flex-1 sm:flex-none">
+              <ArrowUpDown className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                className="w-full sm:w-40 bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 appearance-none"
+              >
+                <option value="newest">{t('trips.newest')}</option>
+                <option value="oldest">{t('trips.oldest')}</option>
+                <option value="name">{t('trips.name')}</option>
+                <option value="progress">{t('trips.progress')}</option>
+              </select>
+            </div>
           </div>
-          <div className="flex-1 flex items-center gap-2 sm:justify-end">
-            <ArrowUpDown className="w-4 h-4 text-stone-400" />
-            <select 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 flex-1 sm:flex-none"
-            >
-              <option value="newest">{t('trips.newest')}</option>
-              <option value="oldest">{t('trips.oldest')}</option>
-              <option value="name">{t('trips.name')}</option>
-              <option value="progress">{t('trips.progress')}</option>
-            </select>
-          </div>
+        </div>
+      )}
+
+      {isJoining && (
+        <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 sm:p-8">
+          <h3 className="text-lg font-semibold mb-6">{t('trips.join', 'Join Trip')}</h3>
+          <form onSubmit={handleJoinSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-stone-700">{t('trips.inviteCode', 'Invite Code')}</label>
+              <input
+                type="text"
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="e.g., X7B9QA"
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 font-mono tracking-widest uppercase"
+                required
+                maxLength={6}
+              />
+              <p className="text-xs text-stone-500 mt-2">
+                {t('trips.inviteCodeHelp', 'Enter the 6-digit code shared by the trip owner.')}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsJoining(false);
+                  setJoinCode('');
+                }}
+                className="px-4 py-2.5 text-stone-600 font-medium hover:bg-stone-100 rounded-xl transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmittingJoin || joinCode.length < 6}
+                className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-xl px-4 py-2.5 transition-colors flex items-center gap-2"
+              >
+                {isSubmittingJoin ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Users className="w-5 h-5" />
+                )}
+                {t('trips.join', 'Join Trip')}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
@@ -485,23 +519,32 @@ export default function TripListView({ trips, inventory, profile, customLists, o
       <div className="grid grid-cols-1 gap-8">
         {upcomingTrips.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.upcoming')}</h3>
-            <div className="grid grid-cols-1 gap-4">
-              {upcomingTrips.map(renderTripCard)}
+            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.upcomingTrips', 'Upcoming Trips')}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {upcomingTrips.map(trip => <TripCard key={trip.id} trip={trip} onSelectTrip={onSelectTrip} profile={profile || undefined} />)}
+            </div>
+          </div>
+        )}
+
+        {sharedTrips.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.sharedTrips', 'Shared Trips')}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {sharedTrips.map(trip => <TripCard key={trip.id} trip={trip} onSelectTrip={onSelectTrip} profile={profile || undefined} />)}
             </div>
           </div>
         )}
 
         {pastTrips.length > 0 && (
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.past')}</h3>
-            <div className="grid grid-cols-1 gap-4 opacity-75 grayscale-[0.2]">
-              {pastTrips.map(renderTripCard)}
+            <h3 className="text-sm font-bold text-stone-400 uppercase tracking-widest px-1">{t('trips.pastTrips', 'Past Trips')}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-75 grayscale-[0.2]">
+              {pastTrips.map(trip => <TripCard key={trip.id} trip={trip} onSelectTrip={onSelectTrip} profile={profile || undefined} />)}
             </div>
           </div>
         )}
 
-        {trips.length === 0 && !isCreating && (
+        {trips.length === 0 && !isCreating && !isJoining && (
           <div className="text-center py-16 bg-white rounded-2xl border border-stone-200 border-dashed">
             <Plane className="w-12 h-12 text-stone-300 mx-auto mb-3" />
             <h3 className="text-lg font-medium text-stone-900">{t('trips.noTrips')}</h3>
@@ -515,7 +558,8 @@ export default function TripListView({ trips, inventory, profile, customLists, o
             </button>
           </div>
         )}
-        {trips.length > 0 && upcomingTrips.length === 0 && pastTrips.length === 0 && (
+
+        {trips.length > 0 && upcomingTrips.length === 0 && pastTrips.length === 0 && sharedTrips.length === 0 && (
           <div className="text-center py-12 bg-white rounded-2xl border border-stone-200 border-dashed">
             <p className="text-stone-500">{t('trips.noMatch')}</p>
             <button 
@@ -527,6 +571,31 @@ export default function TripListView({ trips, inventory, profile, customLists, o
           </div>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onConfirm={async () => {
+          if (pendingImportTrip) {
+            await onAddTrip(pendingImportTrip);
+            onSelectTrip(pendingImportTrip.id);
+          }
+          setIsImportModalOpen(false);
+        }}
+        title={t('trips.import')}
+        message={t('trips.importConfirm', 'Would you like to import this trip?')}
+        variant="primary"
+      />
+      <ConfirmationModal
+        isOpen={isImportStartModalOpen}
+        onClose={() => setIsImportStartModalOpen(false)}
+        onConfirm={() => {
+          setIsImportStartModalOpen(false);
+          fileInputRef.current?.click();
+        }}
+        title={t('trips.import')}
+        message={t('trips.importStartConfirm', 'Are you sure you want to import a trip?')}
+        variant="primary"
+      />
     </div>
   );
 }

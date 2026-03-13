@@ -80,9 +80,35 @@ service cloud.firestore {
 
     // Trips collection
     match /trips/{tripId} {
-      allow read: if isDocOwner();
+      function isParticipant() {
+        return isAuthenticated() && request.auth.uid in resource.data.participants;
+      }
+      
+      function isOwnerOrParticipant() {
+        return isDocOwner() || isParticipant();
+      }
+
+      function isJoining() {
+        let isAddingSelf = request.resource.data.participants.hasAll(resource.data.participants) &&
+                           request.resource.data.participants.size() == resource.data.participants.size() + 1 &&
+                           request.resource.data.participants.hasAny([request.auth.uid]);
+        let tokenValid = request.resource.data.lastConsumedToken == resource.data.inviteToken &&
+                         !('inviteToken' in request.resource.data);
+        let onlyAllowedFields = request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants', 'inviteToken', 'lastConsumedToken', 'participantProfiles']);
+        return isAuthenticated() && isAddingSelf && tokenValid && onlyAllowedFields;
+      }
+
+      function isParticipantUpdate() {
+        let onlyAllowedFields = request.resource.data.diff(resource.data).affectedKeys().hasOnly(['items', 'participants', 'participantProfiles']);
+        let isLeaving = request.resource.data.participants.size() == resource.data.participants.size() - 1 &&
+                        !request.resource.data.participants.hasAny([request.auth.uid]);
+        let participantsUnchanged = request.resource.data.participants == resource.data.participants;
+        return isParticipant() && onlyAllowedFields && (isLeaving || participantsUnchanged);
+      }
+
+      allow read: if isOwnerOrParticipant() || resource.data.inviteToken != null;
       allow create: if isAuthenticated() && uidUnchanged() && isValidTrip(request.resource.data);
-      allow update: if isDocOwner() && uidNotModified() && isValidTrip(request.resource.data);
+      allow update: if (isDocOwner() && uidNotModified() && isValidTrip(request.resource.data)) || isJoining() || isParticipantUpdate();
       allow delete: if isDocOwner();
     }
 

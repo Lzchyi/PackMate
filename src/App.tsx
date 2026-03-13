@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { onSnapshot, collection, query, where, doc, setDoc, getDoc, deleteDoc, getDocs } from 'firebase/firestore';
+import { onSnapshot, collection, query, where, doc, setDoc, getDoc, deleteDoc, getDocs, or, updateDoc, deleteField } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
 import { auth, db, signInWithGoogle } from './firebase';
 import { InventoryItem, Trip, UserProfile, CustomList } from './types';
@@ -8,7 +8,11 @@ import InventoryView from './components/InventoryView';
 import TripListView from './components/TripListView';
 import TripDetailView from './components/TripDetailView';
 import ProfileView from './components/ProfileView';
-import { Luggage, Box, Plane, User, LogIn, Globe } from 'lucide-react';
+import LandingView from './components/LandingView';
+import { Luggage, Box, Plane, User, LogIn, Globe, Home } from 'lucide-react';
+import { motion, AnimatePresence, PanInfo } from 'motion/react';
+import { Toaster, toast } from 'react-hot-toast';
+import { SUGGESTED_ITEMS } from './data/constants';
 
 export default function App() {
   const { t, i18n } = useTranslation();
@@ -19,8 +23,47 @@ export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [customLists, setCustomLists] = useState<CustomList[]>([]);
-  const [activeTab, setActiveTab] = useState<'trips' | 'inventory' | 'profile'>('trips');
+  const [activeTab, setActiveTab] = useState<'landing' | 'trips' | 'inventory' | 'profile'>('landing');
+  const [initialized, setInitialized] = useState(false);
   const [activeTripId, setActiveTripId] = useState<string | null>(null);
+  const [allEssentials, setAllEssentials] = useState<InventoryItem[]>(() => {
+    const saved = localStorage.getItem('packwise_essentials_v2');
+    return saved ? JSON.parse(saved) : (SUGGESTED_ITEMS['All Essentials'] || []);
+  });
+
+  useEffect(() => {
+    localStorage.setItem('packwise_essentials_v2', JSON.stringify(allEssentials));
+  }, [allEssentials]);
+
+  const tabs: ('landing' | 'trips' | 'inventory' | 'profile')[] = ['landing', 'trips', 'inventory', 'profile'];
+
+  const handleSwipe = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const threshold = 50;
+    const velocityThreshold = 0.5;
+
+    if (Math.abs(info.offset.x) < threshold && Math.abs(info.velocity.x) < velocityThreshold) return;
+
+    // Swipe Right (Left to Right) -> Previous
+    if (info.offset.x > threshold) {
+      if (activeTripId) {
+        setActiveTripId(null);
+      } else {
+        const currentIndex = tabs.indexOf(activeTab);
+        if (currentIndex > 0) {
+          setActiveTab(tabs[currentIndex - 1]);
+        }
+      }
+    } 
+    // Swipe Left (Right to Left) -> Next
+    else if (info.offset.x < -threshold) {
+      if (!activeTripId) {
+        const currentIndex = tabs.indexOf(activeTab);
+        if (currentIndex < tabs.length - 1) {
+          setActiveTab(tabs[currentIndex + 1]);
+        }
+      }
+    }
+  };
 
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [signInError, setSignInError] = useState<string | null>(null);
@@ -52,6 +95,7 @@ export default function App() {
   const handleContinueAsGuest = () => {
     setIsGuest(true);
     localStorage.setItem(STORAGE_KEYS.IS_GUEST, 'true');
+    setActiveTab('landing');
     
     // Initialize guest profile if not exists
     const savedProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
@@ -60,8 +104,7 @@ export default function App() {
         uid: 'guest',
         name: t('auth.traveler'),
         joinedAt: Date.now(),
-        language: i18n.language as 'en-GB' | 'zh-CN',
-        masterNotificationsEnabled: true
+        language: i18n.language as 'en-GB' | 'zh-CN'
       };
       localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(guestProfile));
       setProfile(guestProfile);
@@ -102,8 +145,7 @@ export default function App() {
             email: firebaseUser.email || '',
             avatarUrl: firebaseUser.photoURL || '',
             joinedAt: Date.now(),
-            language: i18n.language as 'en-GB' | 'zh-CN',
-            masterNotificationsEnabled: true
+            language: i18n.language as 'en-GB' | 'zh-CN'
           };
           await setDoc(userDocRef, newProfile);
           setProfile(newProfile);
@@ -114,9 +156,16 @@ export default function App() {
             i18n.changeLanguage(data.language);
           }
         }
+        if (!initialized) {
+          setActiveTab('landing');
+          setInitialized(true);
+        }
       } else if (guestMode) {
         setIsGuest(true);
-        handleContinueAsGuest();
+        if (!initialized) {
+          setActiveTab('landing');
+          setInitialized(true);
+        }
       } else {
         setUser(null);
         setIsGuest(false);
@@ -130,23 +179,110 @@ export default function App() {
     return () => unsubscribe();
   }, [i18n]);
 
+  const joinAttemptedRef = React.useRef(false);
+
+  useEffect(() => {
+    const handleJoinLink = async () => {
+      if (!user || isGuest || joinAttemptedRef.current) return;
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const joinParam = urlParams.get('join');
+      
+      if (joinParam) {
+        joinAttemptedRef.current = true;
+        try {
+          const [tripId, joinToken] = joinParam.split('_');
+          
+          if (!tripId || !joinToken) {
+            throw new Error('Invalid invite link format');
+          }
+
+          // Get the specific trip
+          const tripRef = doc(db, 'trips', tripId);
+          let tripSnap;
+          try {
+            tripSnap = await getDoc(tripRef);
+          } catch (err: any) {
+            if (err.code === 'permission-denied') {
+              alert(t('trips.invalidLink', 'Invalid or expired invite link.'));
+              return;
+            }
+            throw err;
+          }
+          
+          if (tripSnap.exists()) {
+            const tripData = tripSnap.data() as Trip;
+            
+            // Verify token matches
+            if (tripData.inviteToken === joinToken) {
+              // If user is not already a participant
+              if (!tripData.participants?.includes(user.uid)) {
+                const updatedParticipants = [...(tripData.participants || [tripData.uid]), user.uid];
+                const updatedProfiles = {
+                  ...(tripData.participantProfiles || {}),
+                  [user.uid]: {
+                    name: profile?.name || user.displayName || 'User',
+                    avatarUrl: profile?.avatarUrl || user.photoURL || undefined
+                  }
+                };
+                
+                await updateDoc(doc(db, 'trips', tripData.id), {
+                  participants: updatedParticipants,
+                  participantProfiles: removeUndefined(updatedProfiles),
+                  lastConsumedToken: joinToken,
+                  inviteToken: deleteField()
+                });
+                
+                toast.success(t('trips.joinedSuccessfully', 'Successfully joined the trip!'));
+              } else {
+                toast.error(t('trips.alreadyJoined', 'You are already a participant in this trip.'));
+              }
+              
+              // Navigate to the trip
+              setActiveTab('trips');
+              setActiveTripId(tripData.id);
+            } else {
+              alert(t('trips.invalidLink', 'Invalid or expired invite link.'));
+            }
+          } else {
+            alert(t('trips.invalidLink', 'Invalid or expired invite link.'));
+          }
+        } catch (error) {
+          console.error('Error joining trip:', error);
+          toast.error(t('common.error', 'An error occurred.'));
+        } finally {
+          // Clean up URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    };
+
+    handleJoinLink();
+  }, [user, isGuest, t, profile]);
+
   useEffect(() => {
     if (!user || isGuest) return;
 
     const qInventory = query(collection(db, 'inventory'), where('uid', '==', user.uid));
     const unsubInventory = onSnapshot(qInventory, (snapshot) => {
       setInventory(snapshot.docs.map(doc => doc.data() as InventoryItem));
-    });
+    }, (error) => handleFirestoreError(error, 'list', 'inventory'));
 
-    const qTrips = query(collection(db, 'trips'), where('uid', '==', user.uid));
+    const qTrips = query(
+      collection(db, 'trips'), 
+      or(
+        where('uid', '==', user.uid),
+        where('participants', 'array-contains', user.uid)
+      )
+    );
     const unsubTrips = onSnapshot(qTrips, (snapshot) => {
       setTrips(snapshot.docs.map(doc => doc.data() as Trip).sort((a, b) => b.createdAt - a.createdAt));
-    });
+    }, (error) => handleFirestoreError(error, 'list', 'trips'));
 
     const qLists = query(collection(db, 'customLists'), where('uid', '==', user.uid));
     const unsubLists = onSnapshot(qLists, (snapshot) => {
       setCustomLists(snapshot.docs.map(doc => doc.data() as CustomList));
-    });
+    }, (error) => handleFirestoreError(error, 'list', 'customLists'));
 
     const unsubProfile = onSnapshot(doc(db, 'users', user.uid), (doc) => {
       if (doc.exists()) {
@@ -156,7 +292,7 @@ export default function App() {
           i18n.changeLanguage(data.language);
         }
       }
-    });
+    }, (error) => handleFirestoreError(error, 'get', 'users'));
 
     return () => {
       unsubInventory();
@@ -168,8 +304,21 @@ export default function App() {
 
   const activeTrip = activeTripId ? trips.find(t => t.id === activeTripId) : null;
 
-  const removeUndefined = (obj: any) => {
-    return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
+  const removeUndefined = (obj: any): any => {
+    if (Array.isArray(obj)) {
+      return obj.map(v => removeUndefined(v));
+    }
+    if (obj !== null && typeof obj === 'object') {
+      return Object.fromEntries(
+        Object.entries(obj)
+          .filter(([_, v]) => {
+             console.log('Filtering:', _, v);
+             return v !== undefined;
+          })
+          .map(([k, v]) => [k, removeUndefined(v)])
+      );
+    }
+    return obj;
   };
 
   const handleFirestoreError = (error: unknown, operationType: string, path: string | null) => {
@@ -195,8 +344,62 @@ export default function App() {
     throw new Error(JSON.stringify(errInfo));
   };
 
+  const joinTrip = async (code: string) => {
+    if (!user || isGuest) return;
+
+    try {
+      const tripsRef = collection(db, 'trips');
+      const q = query(tripsRef, where('inviteToken', '==', code));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error('invalid-code');
+      }
+
+      const tripDoc = querySnapshot.docs[0];
+      const tripData = tripDoc.data() as Trip;
+
+      if (!tripData.participants?.includes(user.uid)) {
+        const participants = tripData.participants || [];
+        if (tripData.uid && !participants.includes(tripData.uid)) {
+          participants.push(tripData.uid);
+        }
+        const updatedParticipants = [...participants, user.uid];
+        const updatedProfiles = {
+          ...(tripData.participantProfiles || {}),
+          [user.uid]: {
+            name: profile?.name || user.displayName || 'User',
+            avatarUrl: profile?.avatarUrl || user.photoURL || undefined
+          }
+        };
+        
+        await updateDoc(doc(db, 'trips', tripData.id), {
+          participants: updatedParticipants,
+          participantProfiles: removeUndefined(updatedProfiles),
+          lastConsumedToken: code,
+          inviteToken: deleteField()
+        });
+        
+        toast.success(t('trips.joinedSuccessfully', 'Successfully joined the trip!'));
+      } else {
+        toast.error(t('trips.alreadyJoined', 'You are already a participant in this trip.'));
+      }
+      
+      setActiveTab('trips');
+      setActiveTripId(tripData.id);
+    } catch (error: any) {
+      console.error('Error joining trip:', error);
+      if (error.message === 'invalid-code' || error.code === 'permission-denied') {
+        toast.error(t('trips.invalidCode', 'Invalid or expired invite code.'));
+      } else {
+        toast.error(t('common.error', 'An error occurred.'));
+      }
+      throw error;
+    }
+  };
+
   const addTrip = async (trip: Trip) => {
-    const tripWithDefaults = { ...trip, notificationsEnabled: true };
+    const tripWithDefaults = { ...trip };
     if (isGuest) {
       const newTrips = [tripWithDefaults, ...trips];
       setTrips(newTrips);
@@ -205,7 +408,17 @@ export default function App() {
     }
     if (!user) return;
     try {
-      await setDoc(doc(db, 'trips', trip.id), removeUndefined({ ...tripWithDefaults, uid: user.uid }));
+      await setDoc(doc(db, 'trips', trip.id), removeUndefined({ 
+        ...tripWithDefaults, 
+        uid: user.uid,
+        participants: [user.uid],
+        participantProfiles: {
+          [user.uid]: {
+            name: profile?.name || user.displayName || 'User',
+            avatarUrl: profile?.avatarUrl || user.photoURL || undefined
+          }
+        }
+      }));
     } catch (error) {
       handleFirestoreError(error, 'create', 'trips');
     }
@@ -235,7 +448,10 @@ export default function App() {
     }
     if (!user) return;
     try {
-      await setDoc(doc(db, 'trips', updatedTrip.id), removeUndefined({ ...updatedTrip, uid: user.uid }));
+      await updateDoc(doc(db, 'trips', updatedTrip.id), removeUndefined({ 
+        ...updatedTrip, 
+        uid: updatedTrip.uid || user.uid 
+      }));
     } catch (error) {
       handleFirestoreError(error, 'update', 'trips');
     }
@@ -451,9 +667,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 font-sans selection:bg-emerald-200 flex flex-col">
+      <Toaster position="top-center" />
       <header className="bg-white border-b border-stone-200 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setActiveTab('landing'); setActiveTripId(null); }}>
             <div className="bg-emerald-500 text-white p-2 rounded-xl">
               <Luggage className="w-5 h-5" />
             </div>
@@ -498,49 +715,72 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTrip ? (
-          <TripDetailView 
-            trip={activeTrip} 
-            inventory={inventory} 
-            profile={profile}
-            customLists={customLists}
-            updateTrip={updateTrip} 
-            onDeleteTrip={deleteTrip}
-            onBack={() => setActiveTripId(null)} 
-          />
-        ) : activeTab === 'inventory' ? (
-          <InventoryView 
-            inventory={inventory} 
-            customLists={customLists}
-            onAddItem={addItem}
-            onDeleteItem={deleteItem}
-            onUpdateItem={updateItem}
-            onAddList={addList}
-            onDeleteList={deleteList}
-            onUpdateList={updateList}
-          />
-        ) : activeTab === 'profile' ? (
-          <ProfileView 
-            profile={profile} 
-            user={user}
-            isGuest={isGuest}
-            inventory={inventory}
-            onUpdateProfile={updateProfile}
-            onSignOut={handleSignOut}
-            onDeleteAccount={handleDeleteAccount}
-          />
-        ) : (
-          <TripListView 
-            trips={trips} 
-            inventory={inventory} 
-            profile={profile}
-            customLists={customLists}
-            onAddTrip={addTrip}
-            onDeleteTrip={deleteTrip}
-            onSelectTrip={setActiveTripId} 
-          />
-        )}
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-x-hidden">
+        <motion.div
+          key={activeTripId || activeTab}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.3 }}
+          onPanEnd={handleSwipe}
+          className="h-full"
+        >
+          {activeTrip ? (
+            <TripDetailView 
+              trip={activeTrip} 
+              inventory={inventory} 
+              profile={profile}
+              user={user}
+              customLists={customLists}
+              allEssentials={allEssentials}
+              updateTrip={updateTrip} 
+              onDeleteTrip={deleteTrip}
+              onBack={() => setActiveTripId(null)} 
+              onAddItem={addItem}
+            />
+          ) : activeTab === 'landing' ? (
+            <LandingView 
+              profile={profile}
+              trips={trips}
+              onNavigate={(tab) => setActiveTab(tab)}
+            />
+          ) : activeTab === 'inventory' ? (
+            <InventoryView 
+              inventory={inventory} 
+              customLists={customLists}
+              allEssentials={allEssentials}
+              setAllEssentials={setAllEssentials}
+              onAddItem={addItem}
+              onDeleteItem={deleteItem}
+              onUpdateItem={updateItem}
+              onAddList={addList}
+              onDeleteList={deleteList}
+              onUpdateList={updateList}
+            />
+          ) : activeTab === 'profile' ? (
+            <ProfileView 
+              profile={profile} 
+              user={user}
+              isGuest={isGuest}
+              inventory={inventory}
+              onUpdateProfile={updateProfile}
+              onSignOut={handleSignOut}
+              onDeleteAccount={handleDeleteAccount}
+            />
+          ) : (
+            <TripListView 
+              trips={trips} 
+              inventory={inventory} 
+              profile={profile}
+              customLists={customLists}
+              allEssentials={allEssentials}
+              onAddTrip={addTrip}
+              onDeleteTrip={deleteTrip}
+              onSelectTrip={setActiveTripId} 
+              onJoinTrip={joinTrip}
+            />
+          )}
+        </motion.div>
       </main>
     </div>
   );
