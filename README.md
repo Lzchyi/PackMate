@@ -1,20 +1,24 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# PackMate
 
-# Run and deploy your AI Studio app
+PackMate is your ultimate travel packing companion, designed to help you organize your gear, manage packing lists, and plan your trip itineraries with ease.
 
-This contains everything you need to run your app locally.
+## Features
 
-View your app in AI Studio: https://ai.studio/apps/65b4431d-59a3-4491-ad13-dc7a103991e3
+- **Inventory Management**: Build and manage your personal gear library. Create custom packing lists for different types of trips.
+- **Trip Planning**: Create detailed trip itineraries with dates, destinations, and custom packing requirements.
+- **Must-Bring Essentials**: Automatically include essential items (like passports, chargers) in every new trip.
+- **Multi-Language Support**: Currently available in English and Chinese (zh-CN).
+- **Data Synchronization**: Securely sync your data across devices using Firebase.
 
-## Run Locally
+## Tech Stack
 
-**Prerequisites:**  Node.js
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **Backend/Database**: Firebase (Firestore, Authentication)
+- **Internationalization**: i18next
 
+## Getting Started
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. Clone this repository.
+2. Install dependencies: `npm install`
+3. Set up your Firebase project and update `firebase-applet-config.json` with your credentials.
+4. Run the development server: `npm run dev`
