@@ -40,6 +40,8 @@ export default function TripDetailView({ trip, inventory, profile, isGuest, user
     CATEGORIES.reduce((acc, cat) => ({ ...acc, [cat]: true }), {})
   );
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isRemoveParticipantModalOpen, setIsRemoveParticipantModalOpen] = useState(false);
+  const [participantToRemove, setParticipantToRemove] = useState<string | null>(null);
   const [addTab, setAddTab] = useState<'mustBring' | 'gear' | 'suggested' | 'custom' | 'lists' | 'search'>('mustBring');
   const [expandedListId, setExpandedListId] = useState<string | null>(null);
   const [expandedPresetId, setExpandedPresetId] = useState<string | null>(null);
@@ -1703,8 +1705,8 @@ export default function TripDetailView({ trip, inventory, profile, isGuest, user
         isOpen={isCopiedModalOpen}
         onClose={() => setIsCopiedModalOpen(false)}
         onConfirm={() => setIsCopiedModalOpen(false)}
-        title={t('common.copied', 'Copied!')}
-        message={t('trips.inviteCodeCopied', 'The invitation code has been copied to your clipboard.')}
+        title={t('common.copied')}
+        message={t('trips.inviteCodeCopied')}
         confirmText={t('common.gotIt')}
         variant="primary"
       />
@@ -1797,35 +1799,27 @@ export default function TripDetailView({ trip, inventory, profile, isGuest, user
 
               {trip.participants && trip.participants.length > 1 && (
                 <div>
-                  <h4 className="font-medium text-stone-900 mb-3">{t('trips.participants', 'Participants')}</h4>
+                  <h4 className="font-medium text-stone-900 dark:text-white mb-3">{t('trips.participants')}</h4>
                   <div className="space-y-3">
                     {trip.participants.map(uid => {
                       if (uid === user?.uid) return null;
                       const profile = participantProfiles[uid];
                       return (
-                        <div key={uid} className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                        <div key={uid} className="flex items-center justify-between p-3 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-100 dark:border-stone-700">
                           <div className="flex items-center gap-3">
                             {profile?.avatarUrl ? (
                               <img src={profile.avatarUrl} alt={profile.name} className="w-8 h-8 rounded-full" />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-sm font-bold text-stone-500">
+                              <div className="w-8 h-8 rounded-full bg-stone-200 dark:bg-stone-700 flex items-center justify-center text-sm font-bold text-stone-500 dark:text-stone-300">
                                 {profile?.name?.charAt(0).toUpperCase() || '?'}
                               </div>
                             )}
-                            <span className="font-medium text-stone-700">{profile?.name || t('auth.traveler')}</span>
+                            <span className="font-medium text-stone-700 dark:text-stone-200">{profile?.name || t('auth.traveler')}</span>
                           </div>
                           <button 
                             onClick={() => {
-                              if (confirm(t('trips.removeParticipantConfirm', 'Are you sure you want to remove this participant? All their items will be deleted.'))) {
-                                const newProfiles = { ...trip.participantProfiles };
-                                delete newProfiles[uid];
-                                updateTrip({
-                                  ...trip,
-                                  participants: trip.participants?.filter(p => p !== uid),
-                                  items: trip.items.filter(item => item.ownerId !== uid),
-                                  participantProfiles: newProfiles
-                                });
-                              }
+                              setParticipantToRemove(uid);
+                              setIsRemoveParticipantModalOpen(true);
                             }}
                             className="text-red-500 text-sm font-medium hover:underline"
                           >
@@ -1837,6 +1831,29 @@ export default function TripDetailView({ trip, inventory, profile, isGuest, user
                   </div>
                 </div>
               )}
+              
+              <ConfirmationModal
+                isOpen={isRemoveParticipantModalOpen}
+                onClose={() => {
+                  setIsRemoveParticipantModalOpen(false);
+                  setParticipantToRemove(null);
+                }}
+                onConfirm={() => {
+                  if (participantToRemove) {
+                    const newProfiles = { ...trip.participantProfiles };
+                    delete newProfiles[participantToRemove];
+                    updateTrip({
+                      ...trip,
+                      participants: trip.participants?.filter(p => p !== participantToRemove),
+                      items: trip.items.filter(item => item.ownerId !== participantToRemove),
+                      participantProfiles: newProfiles
+                    });
+                  }
+                }}
+                title={t('trips.removeParticipantConfirmTitle', 'Remove Participant')}
+                message={t('trips.removeParticipantConfirm', 'Are you sure you want to remove this participant? All their items will be deleted.')}
+                variant="danger"
+              />
             </div>
           </div>
         </div>
